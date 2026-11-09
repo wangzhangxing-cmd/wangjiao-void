@@ -1,9 +1,14 @@
 """Generate Abaqus/Standard input files for the chapter-3 FE validation (v5).
 
-Run with ordinary Python 3 (numpy only); Abaqus is not needed for this step::
+Self-contained; runs with Python 2.7 or 3 and numpy, i.e. any of::
 
-    python build_fem_model.py --beta 10 --rock ep --mesh medium
-    python build_fem_model.py --matrix          # recommended validation set
+    abaqus python build_fem_model.py --matrix          # recommended set
+    abaqus python build_fem_model.py --beta 10 --rock ep --mesh medium
+    python build_fem_model.py --matrix
+    Abaqus/CAE: File > Run Script (no arguments -> the recommended set)
+
+Without arguments the six recommended models are written to ``models/``
+next to this script (or the current directory if the script path is unknown).
 
 Each call writes ``<job>.inp`` and ``<job>_meta.json`` into ``--out``.  The
 meta file lists the surface node labels/angles that
@@ -36,19 +41,21 @@ History (same as the semi-analytical model):
 4. P010 ...  internal gas pressure on the seal inner face, one step per
              requested pressure level (default 1, 2, ..., 10 MPa).
 """
-from __future__ import annotations
+from __future__ import division, print_function
 
 import argparse
+import io
 import json
 import math
+import os
 import sys
-from pathlib import Path
 
 import numpy as np
 
-HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE.parents[1] / "02_code" / "core"))
-from layered_ring_operator import LiningInput, SealInput  # noqa: E402
+try:
+    HERE = os.path.dirname(os.path.abspath(__file__))
+except NameError:                      # Abaqus/CAE "Run Script" may not set __file__
+    HERE = os.getcwd()
 
 
 MESH_PRESETS = {
@@ -64,6 +71,55 @@ MESH_PRESETS = {
                  outer_theta_cells=1440, outer_aspect=4.0),
 }
 
+# Lining / seal data identical to 02_code/core (layered_ring_operator.LiningInput
+# and SealInput defaults with residual ratios 0.05).
+LINING = dict(r_in=6.0, r_out=6.5, Ec=33.4e9, nu_c=0.20, Es=200.0e9, alpha=0.05,
+              alpha_g=0.05, cover=0.050, bars=((0.012, 0.200), (0.020, 0.200)))
+SEAL = dict(r_in=5.992, r_out=6.0)
+
+
+class Material(object):
+    def __init__(self, name, E, nu, hoop_ratio, shear_ratio):
+        self.name, self.reference_modulus_pa, self.poisson_ratio = name, E, nu
+        self.hoop_ratio, self.shear_ratio = hoop_ratio, shear_ratio
+
+
+class Segment(object):
+    def __init__(self, r_in, r_out, material):
+        self.inner_radius_m, self.outer_radius_m, self.material = r_in, r_out, material
+
+
+def lining_segments():
+    """Cracked matrix plus two equal-second-moment hoop-reinforcement bands.
+
+    Same algorithm as layered_ring_operator.LiningInput.segments()."""
+    L = LINING
+    t = L["r_out"] - L["r_in"]
+    (d_in, s_in), (d_out, s_out) = L["bars"]
+    bars = [("inner", d_in, s_in, L["cover"] + d_in / 2.0),
+            ("outer", d_out, s_out, t - L["cover"] - d_out / 2.0)]
+    defs = []
+    for name, d, sp, y in bars:
+        area = math.pi * d ** 2 / (4.0 * sp)
+        defs.append((name, area, L["r_in"] + y, math.sqrt(3.0 / 4.0) * d))
+    bounds = [L["r_in"], L["r_out"]]
+    for _, _, centre, width in defs:
+        bounds += [centre - width / 2.0, centre + width / 2.0]
+    bounds = sorted(set(bounds))
+    segments = []
+    for ri, ro in zip(bounds[:-1], bounds[1:]):
+        mid = 0.5 * (ri + ro)
+        hoop, labels = L["alpha"], []
+        for name, area, centre, width in defs:
+            if abs(mid - centre) < width / 2.0 + 1.0e-12:
+                hoop += (L["Es"] - L["alpha"] * L["Ec"]) * area / (L["Ec"] * width)
+                labels.append(name + "_reinforcement")
+        segments.append(Segment(ri, ro, Material(
+            "+".join(labels) if labels else "cracked_concrete_matrix",
+            L["Ec"], L["nu_c"], min(hoop, 1.0), L["alpha_g"])))
+    return segments
+
+
 ROCK = dict(E=12.0e9, nu=0.26, cohesion=0.9e6, phi=40.0, psi=10.0, p0=3.75e6)
 STEEL = dict(E=210.0e9, nu=0.30)
 
@@ -71,7 +127,7 @@ STEEL = dict(E=210.0e9, nu=0.30)
 # --------------------------------------------------------------------------
 # 1-D grids
 # --------------------------------------------------------------------------
-def graded_segment(length: float, h_min: float, h_max: float, growth: float) -> np.ndarray:
+def graded_segment(length, h_min, h_max, growth):
     """Element sizes over ``length``: h_min at the start, growing to h_max."""
     if length <= 0.0:
         return np.zeros(0)
@@ -91,7 +147,7 @@ def graded_segment(length: float, h_min: float, h_max: float, growth: float) -> 
     return np.r_[sizes[0], rest]
 
 
-def theta_breaks(beta_deg: float, mesh: dict) -> np.ndarray:
+def theta_breaks(beta_deg, mesh):
     """Corner angles in the local system phi (0 = crown), ascending in [-180,180).
 
     Void endpoints at +-beta/2 are nodes; the mesh is symmetric about the crown.
@@ -112,40 +168,38 @@ def theta_breaks(beta_deg: float, mesh: dict) -> np.ndarray:
     return phi
 
 
-def liner_radii(mesh: dict) -> tuple[np.ndarray, list[tuple[str, int]]]:
+def liner_radii(mesh):
     """Corner radii from the seal inner face to 6.5 m and the layer material of
     each radial element row."""
-    lining = LiningInput()
-    seal = SealInput()
-    radii = list(np.linspace(seal.inner_radius_m, seal.outer_radius_m, mesh["seal_layers"] + 1))
+    radii = list(np.linspace(SEAL["r_in"], SEAL["r_out"], mesh["seal_layers"] + 1))
     rows = [("STEEL", -1)] * mesh["seal_layers"]
-    for k, segment in enumerate(lining.segments()):
+    for k, segment in enumerate(lining_segments()):
         n = max(1, int(math.ceil((segment.outer_radius_m - segment.inner_radius_m) / mesh["lining_dr"])))
         radii.extend(np.linspace(segment.inner_radius_m, segment.outer_radius_m, n + 1)[1:])
         rows.extend([("RC%d" % (k + 1), k)] * n)
     return np.asarray(radii), rows
 
 
-def rock_inner_radii(R: float, r_tie: float, mesh: dict) -> np.ndarray:
+def rock_inner_radii(R, r_tie, mesh):
     sizes = graded_segment(r_tie - R, mesh["rock_dr0"], 1.0e9, mesh["rock_growth"])
     radii = R + np.r_[0.0, np.cumsum(sizes)]
     radii[-1] = r_tie
     return radii
 
 
-def rock_outer_radii(r_tie: float, r_out: float, n_theta: int, aspect: float) -> np.ndarray:
+def rock_outer_radii(r_tie, r_out, n_theta, aspect):
     ratio = 1.0 + aspect * 2.0 * math.pi / n_theta
     n = max(4, int(math.ceil(math.log(r_out / r_tie) / math.log(ratio))))
-    return np.geomspace(r_tie, r_out, n + 1)
+    return r_tie * (r_out / r_tie) ** (np.arange(n + 1) / float(n))
 
 
 # --------------------------------------------------------------------------
 # Structured CPE8R annulus
 # --------------------------------------------------------------------------
-class Annulus:
+class Annulus(object):
     """Quadratic structured annulus. Node grid (a, b): a=0..2*nr, b=0..2*nt-1."""
 
-    def __init__(self, radii: np.ndarray, phi_deg: np.ndarray):
+    def __init__(self, radii, phi_deg):
         self.r = np.asarray(radii, float)
         self.phi = np.asarray(phi_deg, float)
         self.nr, self.nt = len(self.r) - 1, len(self.phi)
@@ -192,7 +246,7 @@ class Annulus:
         a = 2 * i_corner
         return [self.label(a, b) for b in range(self.width)], list(self.phi_full)
 
-    def check_orientation(self, coords: dict):
+    def check_orientation(self, coords):
         worst = np.inf
         for _, conn in self.elements():
             xy = np.array([coords[n] for n in (conn[0], conn[4], conn[1], conn[5],
@@ -214,7 +268,7 @@ def fmt_list(values, per_line=16):
                      for k in range(0, len(values), per_line))
 
 
-def rc_constants(material) -> list[float]:
+def rc_constants(material):
     """Abaqus ENGINEERING CONSTANTS for the semi-analytical orthotropic law.
 
     Local axes (cylindrical orientation): 1=r, 2=theta, 3=z.  Reproduces the
@@ -227,7 +281,7 @@ def rc_constants(material) -> list[float]:
     return [E, eta * E, E, nu * s, nu, nu * s * eta, eta_g * G, G, eta_g * G]
 
 
-def write_part(out, name, ann: Annulus, elsets: dict, surfaces: dict, nsets: dict, extra=""):
+def write_part(out, name, ann, elsets, surfaces, nsets, extra=""):
     out.append("*Part, name=%s" % name)
     out.append("*Node")
     for lab, x, y in ann.nodes():
@@ -248,11 +302,11 @@ def write_part(out, name, ann: Annulus, elsets: dict, surfaces: dict, nsets: dic
     out.append("*End Part")
 
 
-def build(beta_deg: float, rock_model: str, mesh_name: str, pressures_mpa: list[float],
-          out_dir: Path, r_out_factor: float, excavation_increments: int,
-          job: str | None = None) -> Path:
+def build(beta_deg, rock_model, mesh_name, pressures_mpa,
+          out_dir, r_out_factor, excavation_increments,
+          job=None):
     mesh = MESH_PRESETS[mesh_name]
-    R = LiningInput().outer_radius_m
+    R = LINING["r_out"]
     r_tie, r_out = 3.0 * R, r_out_factor * R
     half = beta_deg / 2.0
     job = job or "V5_B%02d_%s_%s" % (int(round(beta_deg)), rock_model.upper(), mesh_name)
@@ -269,7 +323,7 @@ def build(beta_deg: float, rock_model: str, mesh_name: str, pressures_mpa: list[
         return beta_deg > 0.0 and abs(p) < half - 1.0e-9
 
     # ---- liner sets
-    segments = LiningInput().segments()
+    segments = lining_segments()
     liner_elsets = {"SEAL": [], "RC": []}
     for k in range(len(segments)):
         liner_elsets["RC%d" % (k + 1)] = []
@@ -339,7 +393,7 @@ def build(beta_deg: float, rock_model: str, mesh_name: str, pressures_mpa: list[
             raise AssertionError("Support node is not on an axis")
 
     # ---- input file
-    o: list[str] = []
+    o = []
     o.append("*Heading\n** %s: chapter-3 FE validation v5, void %.4g deg at crown, rock=%s, mesh=%s"
              % (job, beta_deg, rock_model, mesh_name))
     o.append("** generated by 03_fem/fem_v5/build_fem_model.py; units N, m, Pa")
@@ -404,9 +458,11 @@ def build(beta_deg: float, rock_model: str, mesh_name: str, pressures_mpa: list[
                  "0.1, 1., 1e-06, 0.25\n%s*Dsload, op=MOD\nLINER-1.SEAL_INNER, P, %.6e\n%s*End Step"
                  % (name, unsymm, controls, p * 1.0e6, field))
 
-    out_dir.mkdir(parents=True, exist_ok=True)
-    inp = out_dir / (job + ".inp")
-    inp.write_text("\n".join(o) + "\n", encoding="ascii")
+    if not os.path.isdir(out_dir):
+        os.makedirs(out_dir)
+    inp = os.path.join(out_dir, job + ".inp")
+    with open(inp, "w") as handle:
+        handle.write("\n".join(o) + "\n")
 
     meta = dict(
         job=job, version="fem-v5", void_angle_deg=beta_deg, rock_model=rock_model,
@@ -434,7 +490,8 @@ def build(beta_deg: float, rock_model: str, mesh_name: str, pressures_mpa: list[
             "Menetrey-Willam deviatoric); the semi-analytical model uses the classical "
             "nonsmooth surfaces. Quantify by the beta=0 comparison.")),
     )
-    (out_dir / (job + "_meta.json")).write_text(json.dumps(meta, indent=1), encoding="utf-8")
+    with open(os.path.join(out_dir, job + "_meta.json"), "w") as handle:
+        handle.write(json.dumps(meta, indent=1))
     print("%s: %d elements (theta cells %d, liner rows %d, rock rows %d+%d), "
           "min theta cell %.4f deg -> %s"
           % (job, meta["counts"]["elements"], liner.nt, liner.nr, rin.nr, rout.nr,
@@ -442,8 +499,8 @@ def build(beta_deg: float, rock_model: str, mesh_name: str, pressures_mpa: list[
     return inp
 
 
-def main() -> None:
-    ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+def main():
+    ap = argparse.ArgumentParser(description="Generate v5 Abaqus validation models")
     ap.add_argument("--beta", type=float, default=10.0, help="void angle in degrees (0 = no void)")
     ap.add_argument("--rock", choices=("el", "ep"), default="ep")
     ap.add_argument("--mesh", choices=tuple(MESH_PRESETS), default="medium")
@@ -451,13 +508,18 @@ def main() -> None:
                     help="comma separated internal pressures in MPa (one step each)")
     ap.add_argument("--r-out", type=float, default=40.0, help="outer radius / 6.5 m")
     ap.add_argument("--excavation-increments", type=int, default=30)
-    ap.add_argument("--out", default=str(HERE / "models"))
+    ap.add_argument("--out", default=os.path.join(HERE, "models"))
     ap.add_argument("--matrix", action="store_true",
                     help="write the recommended validation set (see README)")
-    a = ap.parse_args()
+    argv = [v for v in sys.argv[1:] if v.startswith("--") or not v.startswith("-")]
+    known = [v for v in argv if v.split("=")[0] in {o for act in ap._actions for o in act.option_strings}]
+    a, _ = ap.parse_known_args(argv)
+    # Abaqus/CAE Run Script passes no script arguments: build the recommended set.
+    run_matrix = a.matrix or not known
     pressures = [float(v) for v in a.pressures.split(",") if v.strip()]
-    out = Path(a.out)
-    if a.matrix:
+    out = a.out
+    print("writing to", out)
+    if run_matrix:
         for beta, rock, mesh in ((10, "el", "medium"), (10, "ep", "medium"),
                                  (0, "el", "medium"), (0, "ep", "medium"),
                                  (10, "ep", "coarse"), (10, "ep", "fine")):
@@ -466,5 +528,5 @@ def main() -> None:
         build(a.beta, a.rock, a.mesh, pressures, out, a.r_out, a.excavation_increments)
 
 
-if __name__ == "__main__":
-    main()
+# Called unconditionally so that Abaqus/CAE "Run Script" (execfile) also runs it.
+main()

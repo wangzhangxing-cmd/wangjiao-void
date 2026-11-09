@@ -4,8 +4,10 @@
 
 | 脚本 | 运行环境 | 作用 |
 |---|---|---|
-| `build_fem_model.py` | 普通 Python 3 + numpy（不需要 Abaqus） | 生成 Abaqus `.inp` 和对应的 `_meta.json` |
-| `extract_fem_results.py` | `abaqus python`（2022 版 Python 2.7、2024 版及以后 Python 3 均可） | 从 ODB 提取与半解析解同口径的结果 |
+| `build_fem_model.py` | Abaqus 自带 Python（含 CAE 的 Run Script）或普通 Python，2.7/3 均可；只需要 numpy，不依赖仓库里的其他文件 | 生成 Abaqus `.inp` 和对应的 `_meta.json` |
+| `extract_fem_results.py` | Abaqus 自带 Python（命令行或 CAE 的 Run Script，2.7/3 均可） | 从 ODB 提取与半解析解同口径的结果 |
+
+两个脚本可以单独拷到任何装有 Abaqus 的电脑上使用。
 
 ## 与旧模型（`03_fem/results_b10_p100`）相比改了什么
 
@@ -21,20 +23,23 @@
 | 界面压力 | 近壁单元中心应力 | 岩侧和衬砌侧节点应力，以及节点力合力三种算法 | 和半解析界面牵引同一位置 |
 | 塑性应变范数 | PE12 被当成张量剪切 | PE12（工程剪应变）按张量换算：+0.5·γ² | 旧脚本把剪切项多算了约 2 倍 |
 
-RC 五层材料直接由 `02_code/core/layered_ring_operator.py` 计算，和半解析模型、旧 V4 模型的工程常数逐位一致。
+RC 五层材料按 `02_code/core/layered_ring_operator.py` 的同一算法内置在脚本中，和半解析模型、旧 V4 模型的工程常数逐位一致。
 
 ## 生成模型
 
+三种方式任选一种：
+
+- Abaqus/CAE：File → Run Script → 选 `build_fem_model.py`。不带参数，自动生成下表 6 个模型。
+- 命令行：
 ```bash
-cd 03_fem/fem_v5
-python build_fem_model.py --matrix
+abaqus python build_fem_model.py --matrix
+```
+- 只生成单个模型：
+```bash
+abaqus python build_fem_model.py --beta 10 --rock ep --mesh medium --pressures 1,2,3,4,5,6,7,8,9,10
 ```
 
-默认输出到 `03_fem/fem_v5/models/`（已在 `.gitignore` 中排除，文件较大）。单个模型：
-
-```bash
-python build_fem_model.py --beta 10 --rock ep --mesh medium --pressures 1,2,3,4,5,6,7,8,9,10
-```
+输出到脚本所在文件夹下的 `models/`；CAE 里若取不到脚本路径，则输出到 CAE 的工作目录下的 `models/`，屏幕上会打印实际路径。fine 模型约 90 MB，生成要几分钟。
 
 `--matrix` 生成的 6 个模型及用途：
 
@@ -57,8 +62,16 @@ abaqus job=V5_B10_EP_medium input=V5_B10_EP_medium.inp cpus=8 interactive
 
 ## 提取结果
 
+最简单的做法：把 `extract_fem_results.py` 放到 ODB 所在文件夹，`_meta.json` 放在同一文件夹或其下的 `models/` 中，然后在这个文件夹里运行（或在 CAE 里 Run Script）：
+
 ```bash
-abaqus python extract_fem_results.py --odb V5_B10_EP_medium.odb --meta V5_B10_EP_medium_meta.json --out results_V5_B10_EP_medium
+abaqus python extract_fem_results.py
+```
+
+脚本会处理该文件夹里所有带 `_meta.json` 的 ODB，结果写到 `results_<作业名>/`。也可以指定单个 ODB：
+
+```bash
+abaqus python extract_fem_results.py --odb V5_B10_EP_medium.odb --meta models/V5_B10_EP_medium_meta.json --out results_V5_B10_EP_medium
 ```
 
 输出：
@@ -90,4 +103,4 @@ abaqus python extract_fem_results.py --odb V5_B10_EP_medium.odb --meta V5_B10_EP
 
 - Abaqus 的 Mohr–Coulomb 流动势是光滑化的（子午面偏心率 0.1，偏平面 Menetrey–Willam 形式），半解析用的是经典非光滑 Mohr–Coulomb。两者的差异由 B00_EP 和闭式解的对比量化。
 - 脱空区按"持续存在的非接触界面"处理（不建接触），和半解析假设一致；若需检查脱空是否闭合，可看 `Pxxx_interface.csv` 中脱空段衬砌和岩壁的径向位移差。
-- `extract_fem_results.py` 已用仿造 ODB 测过全部代码路径，但没有在真实 Abaqus 中运行过。衬砌侧牵引（`q_lining_side`）依赖 `directions=YES` 输出局部柱坐标分量；若它与岩侧牵引明显不同，以岩侧和合力结果为准。
+- 两个脚本已按 Python 2.7 语法检查，并在 Python 3 下实测；提取脚本用仿造 ODB 测过全部代码路径，但都没有在真实 Abaqus 中运行过。衬砌侧牵引（`q_lining_side`）依赖 `directions=YES` 输出局部柱坐标分量；若它与岩侧牵引明显不同，以岩侧和合力结果为准。

@@ -6,6 +6,10 @@ Run inside Abaqus Python (2022: Python 2.7; 2024+: Python 3)::
     abaqus python extract_fem_results.py --odb V5_B10_EP_medium.odb ^
         --meta V5_B10_EP_medium_meta.json --out results_V5_B10_EP_medium
 
+or with no arguments (also Abaqus/CAE File > Run Script): every ``<job>.odb``
+in the current work directory that has a ``<job>_meta.json`` next to it (or in
+``models/``) is extracted into ``results_<job>/``.
+
 All operating quantities are increments relative to the end of ADD-LINING,
 the same reference state as the semi-analytical model.  Signs: q > 0 is
 compression of the rock wall by the lining; displacement u_r > 0 is outward.
@@ -173,11 +177,43 @@ def tensor_norm(pe):
 
 # --------------------------------------------------------------------------
 def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--odb", required=True)
-    ap.add_argument("--meta", required=True)
-    ap.add_argument("--out", required=True)
-    args = ap.parse_args()
+    ap = argparse.ArgumentParser(description="Extract v5 validation results")
+    ap.add_argument("--odb")
+    ap.add_argument("--meta")
+    ap.add_argument("--out")
+    argv = [v for v in sys.argv[1:] if v.split("=")[0] in ("--odb", "--meta", "--out")
+            or not v.startswith("-")]
+    args, _ = ap.parse_known_args(argv)
+    if args.odb and args.meta:
+        jobs = [(args.odb, args.meta, args.out or "results_" + os.path.splitext(
+            os.path.basename(args.odb))[0])]
+    else:
+        jobs = []
+        for name in sorted(os.listdir(os.getcwd())):
+            if not name.lower().endswith(".odb"):
+                continue
+            job = name[:-4]
+            for folder in (os.getcwd(), os.path.join(os.getcwd(), "models")):
+                meta = os.path.join(folder, job + "_meta.json")
+                if os.path.isfile(meta):
+                    jobs.append((name, meta, "results_" + job))
+                    break
+            else:
+                print("skip %s: no %s_meta.json" % (name, job))
+        if not jobs:
+            print("No ODB with a matching _meta.json in", os.getcwd())
+    for odb_path, meta_path, out in jobs:
+        print("extracting", odb_path)
+        extract(odb_path, meta_path, out)
+
+
+class _Args(object):
+    def __init__(self, odb, meta, out):
+        self.odb, self.meta, self.out = odb, meta, out
+
+
+def extract(odb_path, meta_path, out):
+    args = _Args(odb_path, meta_path, out)
     meta = json.load(open(args.meta))
     if not os.path.isdir(args.out):
         os.makedirs(args.out)
@@ -380,5 +416,5 @@ def main():
     print("written", os.path.abspath(args.out))
 
 
-if __name__ == "__main__":
-    main()
+# Called unconditionally so that Abaqus/CAE "Run Script" (execfile) also runs it.
+main()

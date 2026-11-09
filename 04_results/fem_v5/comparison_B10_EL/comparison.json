@@ -1,0 +1,168 @@
+{
+ "sa_panels": 8192,
+ "scalars": [
+  {
+   "quantity": "mean contact pressure (resultant) MPa",
+   "fe": 8.99167507,
+   "sa": 8.992040911799567,
+   "diff_percent": -0.004068506840171349
+  },
+  {
+   "quantity": "mean contact u_r mm",
+   "fe": 5.98079296,
+   "sa": 5.975569923539388,
+   "diff_percent": 0.08740649891880725
+  },
+  {
+   "quantity": "mean void u_r mm",
+   "fe": 10.5412268,
+   "sa": 10.562309220409077,
+   "diff_percent": -0.19960048479114034
+  },
+  {
+   "quantity": "seal max von Mises MPa (surface nodes)",
+   "fe": 409.263965,
+   "sa": 410.0748024456381,
+   "diff_percent": -0.19772915594968854
+  },
+  {
+   "quantity": "seal max von Mises MPa (FE integration points)",
+   "fe": 398.723063,
+   "sa": 410.0748024456381,
+   "diff_percent": -2.768211891571404
+  }
+ ],
+ "fields": [
+  {
+   "quantity": "seal_inner_mises_mpa",
+   "range": "all",
+   "fe_max": 409.263965,
+   "sa_max": 410.0748024456381,
+   "max_diff_percent": -0.19772915594968854,
+   "fe_max_angle_deg": -5.30886413,
+   "sa_max_angle_deg": -5.27662519,
+   "rel_l2_percent": 0.18927811885687665,
+   "max_abs_diff": 2.1622703427655665
+  },
+  {
+   "quantity": "seal_inner_mises_mpa",
+   "range": "|angle|<=30",
+   "fe_max": 409.263965,
+   "sa_max": 410.0748024456381,
+   "max_diff_percent": -0.19772915594968854,
+   "fe_max_angle_deg": -5.30886413,
+   "sa_max_angle_deg": -5.27662519,
+   "rel_l2_percent": 0.3018650703395769,
+   "max_abs_diff": 2.1622703427655665
+  },
+  {
+   "quantity": "seal_inner_hoop_mpa",
+   "range": "all",
+   "fe_max": 451.463599,
+   "sa_max": 452.3620188715146,
+   "max_diff_percent": -0.19860638913846707,
+   "fe_max_angle_deg": -5.30886413,
+   "sa_max_angle_deg": -5.27662519,
+   "rel_l2_percent": 0.19662844822183395,
+   "max_abs_diff": 2.4321087315661316
+  },
+  {
+   "quantity": "seal_outer_mises_mpa",
+   "range": "all",
+   "fe_max": 315.932573,
+   "sa_max": 316.18341178406587,
+   "max_diff_percent": -0.07933331563807489,
+   "fe_max_angle_deg": -7.04815418,
+   "sa_max_angle_deg": -7.04815418,
+   "rel_l2_percent": 0.12468267123074749,
+   "max_abs_diff": 1.0915184055158988
+  },
+  {
+   "quantity": "seal_outer_mises_mpa",
+   "range": "|angle|<=30",
+   "fe_max": 315.932573,
+   "sa_max": 316.18341178406587,
+   "max_diff_percent": -0.07933331563807489,
+   "fe_max_angle_deg": -7.04815418,
+   "sa_max_angle_deg": -7.04815418,
+   "rel_l2_percent": 0.19590218277654656,
+   "max_abs_diff": 1.0915184055158988
+  },
+  {
+   "quantity": "seal_outer_hoop_mpa",
+   "range": "all",
+   "fe_max": 346.876838,
+   "sa_max": 347.1600680704866,
+   "max_diff_percent": -0.0815848643136774,
+   "fe_max_angle_deg": -7.04815418,
+   "sa_max_angle_deg": -7.04815418,
+   "rel_l2_percent": 0.13352397628600973,
+   "max_abs_diff": 2.1812093283681726
+  },
+  {
+   "quantity": "lining_ur_mm",
+   "range": "all",
+   "fe_max": 12.3667186,
+   "sa_max": 12.38714401896428,
+   "max_diff_percent": -0.16489207627690128,
+   "fe_max_angle_deg": 0.0,
+   "sa_max_angle_deg": 0.0,
+   "rel_l2_percent": 0.1314096017380726,
+   "max_abs_diff": 0.10240186568846088
+  },
+  {
+   "quantity": "lining_ut_mm_abs",
+   "range": "all",
+   "fe_max": 1.20788854,
+   "sa_max": 1.213049385445117,
+   "max_diff_percent": -0.42544396848470667,
+   "fe_max_angle_deg": -3.91724941,
+   "sa_max_angle_deg": 3.91724941,
+   "rel_l2_percent": 2.4095886176290846,
+   "max_abs_diff": 0.13828474520522405
+  },
+  {
+   "quantity": "rc_max_principal_mpa",
+   "range": "all",
+   "fe_max": 91.8762055,
+   "sa_max": 81.12899973316873,
+   "max_diff_percent": 13.247058144656743,
+   "fe_max_angle_deg": -4.96,
+   "sa_max_angle_deg": 0.0,
+   "rel_l2_percent": 13.734355479105599,
+   "max_abs_diff": 76.40630507886209
+  }
+ ],
+ "edge_windows": [
+  {
+   "window_beyond_endpoint_deg": "0-0.5",
+   "fe_force_mn_per_m": 7.713610935783325,
+   "sa_force_mn_per_m": 8.698581750886875,
+   "diff_percent": -11.323349521927828
+  },
+  {
+   "window_beyond_endpoint_deg": "0.5-2",
+   "fe_force_mn_per_m": 5.3921805476579685,
+   "sa_force_mn_per_m": 5.603078637663318,
+   "diff_percent": -3.763968054771072
+  },
+  {
+   "window_beyond_endpoint_deg": "2-5",
+   "fe_force_mn_per_m": 5.712911668112523,
+   "sa_force_mn_per_m": 6.124163131836418,
+   "diff_percent": -6.715227123621304
+  },
+  {
+   "window_beyond_endpoint_deg": "5-15",
+   "fe_force_mn_per_m": 18.8560414101051,
+   "sa_force_mn_per_m": 19.32271385148533,
+   "diff_percent": -2.4151495745736384
+  },
+  {
+   "window_beyond_endpoint_deg": "15-45",
+   "fe_force_mn_per_m": 58.729433127622706,
+   "sa_force_mn_per_m": 59.169303828569895,
+   "diff_percent": -0.7434103031220718
+  }
+ ]
+}

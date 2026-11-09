@@ -23,7 +23,11 @@ Per pressure step the script writes (``<step>`` = P010 ... P100):
 * ``<step>_interface.csv``     lining outer face, every node: u_r, u_t of the
   lining and of the rock wall, normal/shear traction from the rock-side and the
   lining-side nodal stresses, void flag.
-* ``<step>_concrete.csv``      max principal stress of all RC nodes per angle.
+* ``<step>_concrete.csv``      per angle: max principal stress of all RC layers,
+  of the cracked matrix layers only, and the physical bar stresses (band hoop
+  strain x 200 GPa) of the inner and outer reinforcement.
+* ``<step>_interface_nodal_force.csv`` lining outer-face nodal forces (exact
+  traction resultants per node; use these for load transfer near the void).
 * ``<step>_rock_plastic_cells.csv`` (EP only) elements with operational
   plastic strain increment norm > threshold.
 * ``summary.json`` / ``summary.csv`` one row per step with all scalar metrics.
@@ -43,6 +47,7 @@ from abaqusConstants import ELEMENT_NODAL, INTEGRATION_POINT
 
 PY2 = sys.version_info[0] == 2
 PLASTIC_THRESHOLD = 1.0e-6
+REBAR_E = 200.0e9   # reinforcing steel modulus; bar stress = band hoop strain * REBAR_E
 
 
 # --------------------------------------------------------------------------
@@ -341,21 +346,61 @@ def extract(odb_path, meta_path, out):
             fr_sum += nf1[k, 0] * math.cos(theta[j]) + nf2[k, 0] * math.sin(theta[j])
         contact_len = meta["radii"]["lining_outer"] * math.radians(360.0 - beta)
 
-        # ---- concrete
-        data, nodes, _ = blocks(frame.fieldOutputs["S"].getSubset(
-            region=rc_set, position=ELEMENT_NODAL))
-        by_angle = {}
-        for k, n in enumerate(nodes):
-            x, y = xy[int(n)]
-            a = (math.degrees(math.atan2(y, x)) - 90.0 + 180.0) % 360.0 - 180.0
-            # Snap to the exact mesh angle: ODB coordinates are single precision,
-            # so nodes on one radial line give slightly different atan2 values.
-            j = int(np.argmin(np.abs((phi_sorted - a + 180.0) % 360.0 - 180.0)))
-            a = float(phi_sorted[j])
-            by_angle[a] = max(by_angle.get(a, -1e30), max_principal(data[k]))
-        conc_rows = sorted((a, v / 1e6) for a, v in by_angle.items())
+        # ---- interface nodal forces (exact load transfer; sum = traction resultant)
+        nodal_fr, nodal_ft = {}, {}
+        for k, n in enumerate(nodes1):
+            j = index.get(int(n))
+            if j is None:
+                continue
+            fr = nf1[k, 0] * math.cos(theta[j]) + nf2[k, 0] * math.sin(theta[j])
+            ft = -nf1[k, 0] * math.sin(theta[j]) + nf2[k, 0] * math.cos(theta[j])
+            nodal_fr[j] = nodal_fr.get(j, 0.0) + fr
+            nodal_ft[j] = nodal_ft.get(j, 0.0) + ft
+        write_csv(os.path.join(args.out, step + "_interface_nodal_force.csv"),
+                  ("liner_node", "local_angle_deg", "void", "radial_force_kn_per_m",
+                   "tangential_force_kn_per_m"),
+                  [(int(sn["liner_outer"][j]), float(phi[j]), int(is_void[j]),
+                    nodal_fr.get(j, 0.0) / 1e3, nodal_ft.get(j, 0.0) / 1e3)
+                   for j in np.argsort(phi)])
+
+        # ---- lining: matrix concrete, reinforcement and all-layer envelope
+        def per_angle(elsets, field, reduce_value):
+            """Group ELEMENT_NODAL values by exact mesh angle -> list of values."""
+            groups = {}
+            for name in elsets:
+                if name not in liner.elementSets.keys():
+                    continue
+                data, nodes, _ = blocks(frame.fieldOutputs[field].getSubset(
+                    region=liner.elementSets[name], position=ELEMENT_NODAL))
+                for k, n in enumerate(nodes):
+                    x, y = xy[int(n)]
+                    a = (math.degrees(math.atan2(y, x)) - 90.0 + 180.0) % 360.0 - 180.0
+                    # Snap to the exact mesh angle: ODB coordinates are single
+                    # precision, so nodes on one radial line differ slightly.
+                    j = int(np.argmin(np.abs((phi_sorted - a + 180.0) % 360.0 - 180.0)))
+                    groups.setdefault(float(phi_sorted[j]), []).append(reduce_value(data[k]))
+            return groups
+
+        rc_names = sorted(str(k) for k in liner.elementSets.keys()
+                          if str(k).startswith("RC") and str(k)[2:].isdigit())
+        bands = [r["name"] for r in meta["rc_layers"] if "reinforcement" in r["label"]]
+        band_inner = [r["name"] for r in meta["rc_layers"] if r["label"].startswith("inner")]
+        band_outer = [r["name"] for r in meta["rc_layers"] if r["label"].startswith("outer")]
+        matrix = [n for n in rc_names if n not in bands]
+        envelope_all = per_angle(rc_names, "S", max_principal)
+        matrix_all = per_angle(matrix, "S", max_principal)
+        hoop = lambda e: e[1] * REBAR_E          # local axis 2 = hoop (cylindrical orientation)
+        rebar_in = per_angle(band_inner, "E", hoop) if "E" in frame.fieldOutputs.keys() else {}
+        rebar_out = per_angle(band_outer, "E", hoop) if "E" in frame.fieldOutputs.keys() else {}
+        conc_rows = []
+        for a in sorted(envelope_all):
+            ri, ro = rebar_in.get(a, [float("nan")]), rebar_out.get(a, [float("nan")])
+            conc_rows.append((a, max(envelope_all[a]) / 1e6,
+                              max(matrix_all.get(a, [float("nan")])) / 1e6,
+                              float(np.mean(ri)) / 1e6, float(np.mean(ro)) / 1e6))
         write_csv(os.path.join(args.out, step + "_concrete.csv"),
-                  ("local_angle_deg", "max_principal_mpa"), conc_rows)
+                  ("local_angle_deg", "max_principal_mpa", "matrix_max_principal_mpa",
+                   "rebar_inner_stress_mpa", "rebar_outer_stress_mpa"), conc_rows)
 
         # ---- rock plasticity relative to installation
         plastic = dict(area_mean_m2=None, area_any_ip_m2=None, outer_radius_m=None,
@@ -399,7 +444,12 @@ def extract(odb_path, meta_path, out):
             seal_mises_max_surface="inner" if vm_env["seal_inner"][i] >= vm_env["seal_outer"][i] else "outer",
             seal_surface_peaks=surface_peak,
             seal_mises_integration_point_max_mpa=seal_ip_max,
-            concrete_max_principal_max_mpa=max(v for _, v in conc_rows),
+            concrete_max_principal_max_mpa=max(r[1] for r in conc_rows),
+            concrete_matrix_max_principal_max_mpa=float(np.nanmax([r[2] for r in conc_rows])),
+            rebar_inner_stress_max_mpa=float(np.nanmax([r[3] for r in conc_rows])),
+            rebar_outer_stress_max_mpa=float(np.nanmax([r[4] for r in conc_rows])),
+            rebar_outer_stress_max_local_angle_deg=float(
+                conc_rows[int(np.nanargmax([r[4] for r in conc_rows]))][0]),
             tie_displacement_gap_mm=gap * 1e3,
             rock_operational_plastic=plastic,
         )
@@ -422,6 +472,8 @@ def extract(odb_path, meta_path, out):
                      r["seal_mises_max_mpa"], r["seal_mises_max_local_angle_deg"],
                      r["seal_mises_integration_point_max_mpa"],
                      r["concrete_max_principal_max_mpa"],
+                     r["concrete_matrix_max_principal_max_mpa"], r["rebar_inner_stress_max_mpa"],
+                     r["rebar_outer_stress_max_mpa"],
                      p["area_mean_m2"] if p["area_mean_m2"] is not None else "",
                      p["outer_radius_m"] if p["outer_radius_m"] is not None else "",
                      r["tie_displacement_gap_mm"]))
@@ -429,6 +481,7 @@ def extract(odb_path, meta_path, out):
               ("step", "pressure_mpa", "q_mean_resultant_mpa", "q_mean_rock_stress_mpa",
                "q_mean_lining_stress_mpa", "contact_ur_mm", "void_ur_mm", "seal_mises_max_mpa",
                "seal_peak_local_angle_deg", "seal_mises_ip_max_mpa", "concrete_maxp_max_mpa",
+               "matrix_maxp_max_mpa", "rebar_inner_max_mpa", "rebar_outer_max_mpa",
                "plastic_area_m2", "plastic_outer_radius_m", "tie_gap_mm"), flat)
     odb.close()
     print("written", os.path.abspath(args.out))

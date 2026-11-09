@@ -1,0 +1,354 @@
+{
+ "void_angle_deg": 10.0, 
+ "excavation": {
+  "plastic_area_m2": 0.0, 
+  "plastic_outer_radius_m": 6.5
+ }, 
+ "job": "V5_B10_EL_medium", 
+ "mesh": "medium", 
+ "steps": [
+  {
+   "seal_surface_peaks": {
+    "seal_outer": {
+     "mises_mpa": 31.593259850635896, 
+     "local_angle_deg": -7.048154179881, 
+     "mises_unaveraged_max_mpa": 31.594461702629857
+    }, 
+    "seal_inner": {
+     "mises_mpa": 40.92639352009721, 
+     "local_angle_deg": -5.308864131534, 
+     "mises_unaveraged_max_mpa": 40.9272281262371
+    }
+   }, 
+   "mean_contact_pressure_lining_stress_mpa": 0.8968931800450025, 
+   "rock_operational_plastic": {
+    "reaches_outer_ring": null, 
+    "max_norm": null, 
+    "outer_radius_m": null, 
+    "area_any_ip_m2": null, 
+    "area_mean_m2": null
+   }, 
+   "mean_void_ur_mm": 1.0541226645209227, 
+   "tie_displacement_gap_mm": 0.0, 
+   "seal_mises_max_surface": "inner", 
+   "seal_mises_max_mpa": 40.92639352009721, 
+   "mean_contact_pressure_rock_stress_mpa": 0.8973150445348738, 
+   "step": "P010", 
+   "mean_contact_ur_mm": 0.598079294436171, 
+   "seal_mises_integration_point_max_mpa": 39.87230544127638, 
+   "seal_mises_max_local_angle_deg": -5.308864131534, 
+   "pressure_mpa": 1.0, 
+   "concrete_max_principal_max_mpa": 9.187621112171371, 
+   "mean_contact_pressure_resultant_mpa": 0.8991675094530142
+  }, 
+  {
+   "seal_surface_peaks": {
+    "seal_outer": {
+     "mises_mpa": 63.186519443043146, 
+     "local_angle_deg": -7.048154179881, 
+     "mises_unaveraged_max_mpa": 63.18892331593848
+    }, 
+    "seal_inner": {
+     "mises_mpa": 81.85278725593732, 
+     "local_angle_deg": 5.308864131534, 
+     "mises_unaveraged_max_mpa": 81.85445668396264
+    }
+   }, 
+   "mean_contact_pressure_lining_stress_mpa": 1.7937863570123123, 
+   "rock_operational_plastic": {
+    "reaches_outer_ring": null, 
+    "max_norm": null, 
+    "outer_radius_m": null, 
+    "area_any_ip_m2": null, 
+    "area_mean_m2": null
+   }, 
+   "mean_void_ur_mm": 2.10824533546133, 
+   "tie_displacement_gap_mm": 0.0, 
+   "seal_mises_max_surface": "inner", 
+   "seal_mises_max_mpa": 81.85278725593732, 
+   "mean_contact_pressure_rock_stress_mpa": 1.7946490977274663, 
+   "step": "P020", 
+   "mean_contact_ur_mm": 1.1961585941375064, 
+   "seal_mises_integration_point_max_mpa": 79.74461088255276, 
+   "seal_mises_max_local_angle_deg": 5.308864131534, 
+   "pressure_mpa": 2.0, 
+   "concrete_max_principal_max_mpa": 18.375242224342742, 
+   "mean_contact_pressure_resultant_mpa": 1.7983350175227815
+  }, 
+  {
+   "seal_surface_peaks": {
+    "seal_outer": {
+     "mises_mpa": 94.77977694277509, 
+     "local_angle_deg": -7.048154179881, 
+     "mises_unaveraged_max_mpa": 94.78337346737347
+    }, 
+    "seal_inner": {
+     "mises_mpa": 122.77917990025973, 
+     "local_angle_deg": -5.308864131534, 
+     "mises_unaveraged_max_mpa": 122.78168869179443
+    }
+   }, 
+   "mean_contact_pressure_lining_stress_mpa": 2.690679532158794, 
+   "rock_operational_plastic": {
+    "reaches_outer_ring": null, 
+    "max_norm": null, 
+    "outer_radius_m": null, 
+    "area_any_ip_m2": null, 
+    "area_mean_m2": null
+   }, 
+   "mean_void_ur_mm": 3.16236798968549, 
+   "tie_displacement_gap_mm": 0.0, 
+   "seal_mises_max_surface": "inner", 
+   "seal_mises_max_mpa": 122.77917990025973, 
+   "mean_contact_pressure_rock_stress_mpa": 2.6919831542232275, 
+   "step": "P030", 
+   "mean_contact_ur_mm": 1.7942378896959525, 
+   "seal_mises_integration_point_max_mpa": 119.6169201576669, 
+   "seal_mises_max_local_angle_deg": -5.308864131534, 
+   "pressure_mpa": 3.0, 
+   "concrete_max_principal_max_mpa": 27.56286042105558, 
+   "mean_contact_pressure_resultant_mpa": 2.697502522701269
+  }, 
+  {
+   "seal_surface_peaks": {
+    "seal_outer": {
+     "mises_mpa": 126.37303974237037, 
+     "local_angle_deg": -7.048154179881, 
+     "mises_unaveraged_max_mpa": 126.3778482550967
+    }, 
+    "seal_inner": {
+     "mises_mpa": 163.7055738895274, 
+     "local_angle_deg": -5.308864131534, 
+     "mises_unaveraged_max_mpa": 163.70891274558352
+    }
+   }, 
+   "mean_contact_pressure_lining_stress_mpa": 3.5875727133097004, 
+   "rock_operational_plastic": {
+    "reaches_outer_ring": null, 
+    "max_norm": null, 
+    "outer_radius_m": null, 
+    "area_any_ip_m2": null, 
+    "area_mean_m2": null
+   }, 
+   "mean_void_ur_mm": 4.2164906586096125, 
+   "tie_displacement_gap_mm": 0.0, 
+   "seal_mises_max_surface": "inner", 
+   "seal_mises_max_mpa": 163.7055738895274, 
+   "mean_contact_pressure_rock_stress_mpa": 3.5893172060197784, 
+   "step": "P040", 
+   "mean_contact_ur_mm": 2.392317187097567, 
+   "seal_mises_integration_point_max_mpa": 159.48922176510553, 
+   "seal_mises_max_local_angle_deg": -5.308864131534, 
+   "pressure_mpa": 4.0, 
+   "concrete_max_principal_max_mpa": 36.750484448685484, 
+   "mean_contact_pressure_resultant_mpa": 3.5966700330525376
+  }, 
+  {
+   "seal_surface_peaks": {
+    "seal_outer": {
+     "mises_mpa": 157.9662866432457, 
+     "local_angle_deg": -7.048154179881, 
+     "mises_unaveraged_max_mpa": 157.97229034846185
+    }, 
+    "seal_inner": {
+     "mises_mpa": 204.63198253763068, 
+     "local_angle_deg": -5.308864131534, 
+     "mises_unaveraged_max_mpa": 204.63616980025677
+    }
+   }, 
+   "mean_contact_pressure_lining_stress_mpa": 4.4844658906126815, 
+   "rock_operational_plastic": {
+    "reaches_outer_ring": null, 
+    "max_norm": null, 
+    "outer_radius_m": null, 
+    "area_any_ip_m2": null, 
+    "area_mean_m2": null
+   }, 
+   "mean_void_ur_mm": 5.270613373484831, 
+   "tie_displacement_gap_mm": 0.0, 
+   "seal_mises_max_surface": "inner", 
+   "seal_mises_max_mpa": 204.63198253763068, 
+   "mean_contact_pressure_rock_stress_mpa": 4.486651242783452, 
+   "step": "P050", 
+   "mean_contact_ur_mm": 2.9903964841590835, 
+   "seal_mises_integration_point_max_mpa": 199.3615312859741, 
+   "seal_mises_max_local_angle_deg": -5.308864131534, 
+   "pressure_mpa": 5.0, 
+   "concrete_max_principal_max_mpa": 45.938102744231855, 
+   "mean_contact_pressure_resultant_mpa": 4.495837534145497
+  }, 
+  {
+   "seal_surface_peaks": {
+    "seal_outer": {
+     "mises_mpa": 189.55955388555017, 
+     "local_angle_deg": -7.048154179881, 
+     "mises_unaveraged_max_mpa": 189.56674693474693
+    }, 
+    "seal_inner": {
+     "mises_mpa": 245.55836066349107, 
+     "local_angle_deg": -5.308864131534, 
+     "mises_unaveraged_max_mpa": 245.56337738358886
+    }
+   }, 
+   "mean_contact_pressure_lining_stress_mpa": 5.381359061100434, 
+   "rock_operational_plastic": {
+    "reaches_outer_ring": null, 
+    "max_norm": null, 
+    "outer_radius_m": null, 
+    "area_any_ip_m2": null, 
+    "area_mean_m2": null
+   }, 
+   "mean_void_ur_mm": 6.324735999426327, 
+   "tie_displacement_gap_mm": 0.0, 
+   "seal_mises_max_surface": "inner", 
+   "seal_mises_max_mpa": 245.55836066349107, 
+   "mean_contact_pressure_rock_stress_mpa": 5.3839853036770675, 
+   "step": "P060", 
+   "mean_contact_ur_mm": 3.5884757794771134, 
+   "seal_mises_integration_point_max_mpa": 239.2338403153338, 
+   "seal_mises_max_local_angle_deg": -5.308864131534, 
+   "pressure_mpa": 6.0, 
+   "concrete_max_principal_max_mpa": 55.12572084211116, 
+   "mean_contact_pressure_resultant_mpa": 5.395005044304401
+  }, 
+  {
+   "seal_surface_peaks": {
+    "seal_outer": {
+     "mises_mpa": 221.15281752782803, 
+     "local_angle_deg": -7.048154179881, 
+     "mises_unaveraged_max_mpa": 221.16120905460394
+    }, 
+    "seal_inner": {
+     "mises_mpa": 286.4847615077607, 
+     "local_angle_deg": -5.308864131534, 
+     "mises_unaveraged_max_mpa": 286.49061971363915
+    }
+   }, 
+   "mean_contact_pressure_lining_stress_mpa": 6.278252244965953, 
+   "rock_operational_plastic": {
+    "reaches_outer_ring": null, 
+    "max_norm": null, 
+    "outer_radius_m": null, 
+    "area_any_ip_m2": null, 
+    "area_mean_m2": null
+   }, 
+   "mean_void_ur_mm": 7.378858705343357, 
+   "tie_displacement_gap_mm": 0.0, 
+   "seal_mises_max_surface": "inner", 
+   "seal_mises_max_mpa": 286.4847615077607, 
+   "mean_contact_pressure_rock_stress_mpa": 6.281319350656141, 
+   "step": "P070", 
+   "mean_contact_ur_mm": 4.1865550784086425, 
+   "seal_mises_integration_point_max_mpa": 279.1061502067261, 
+   "seal_mises_max_local_angle_deg": -5.308864131534, 
+   "pressure_mpa": 7.0, 
+   "concrete_max_principal_max_mpa": 64.31334289154293, 
+   "mean_contact_pressure_resultant_mpa": 6.29417254564283
+  }, 
+  {
+   "seal_surface_peaks": {
+    "seal_outer": {
+     "mises_mpa": 252.74607948474073, 
+     "local_angle_deg": -7.048154179881, 
+     "mises_unaveraged_max_mpa": 252.7556965101934
+    }, 
+    "seal_inner": {
+     "mises_mpa": 327.411148401402, 
+     "local_angle_deg": -5.308864131534, 
+     "mises_unaveraged_max_mpa": 327.41782673585055
+    }
+   }, 
+   "mean_contact_pressure_lining_stress_mpa": 7.175145424832094, 
+   "rock_operational_plastic": {
+    "reaches_outer_ring": null, 
+    "max_norm": null, 
+    "outer_radius_m": null, 
+    "area_any_ip_m2": null, 
+    "area_mean_m2": null
+   }, 
+   "mean_void_ur_mm": 8.432981357127153, 
+   "tie_displacement_gap_mm": 0.0, 
+   "seal_mises_max_surface": "inner", 
+   "seal_mises_max_mpa": 327.411148401402, 
+   "mean_contact_pressure_rock_stress_mpa": 7.178653407925303, 
+   "step": "P080", 
+   "mean_contact_ur_mm": 4.784634373125662, 
+   "seal_mises_integration_point_max_mpa": 318.97844353021105, 
+   "seal_mises_max_local_angle_deg": -5.308864131534, 
+   "pressure_mpa": 8.0, 
+   "concrete_max_principal_max_mpa": 73.50096889737097, 
+   "mean_contact_pressure_resultant_mpa": 7.193340065609873
+  }, 
+  {
+   "seal_surface_peaks": {
+    "seal_outer": {
+     "mises_mpa": 284.3393275350547, 
+     "local_angle_deg": -7.048154179881, 
+     "mises_unaveraged_max_mpa": 284.3500973847079
+    }, 
+    "seal_inner": {
+     "mises_mpa": 368.3375645620314, 
+     "local_angle_deg": -5.308864131534, 
+     "mises_unaveraged_max_mpa": 368.34513033098705
+    }
+   }, 
+   "mean_contact_pressure_lining_stress_mpa": 8.072038624839246, 
+   "rock_operational_plastic": {
+    "reaches_outer_ring": null, 
+    "max_norm": null, 
+    "outer_radius_m": null, 
+    "area_any_ip_m2": null, 
+    "area_mean_m2": null
+   }, 
+   "mean_void_ur_mm": 9.487104022262054, 
+   "tie_displacement_gap_mm": 0.0, 
+   "seal_mises_max_surface": "inner", 
+   "seal_mises_max_mpa": 368.3375645620314, 
+   "mean_contact_pressure_rock_stress_mpa": 8.075987448229451, 
+   "step": "P090", 
+   "mean_contact_ur_mm": 5.382713671754643, 
+   "seal_mises_integration_point_max_mpa": 358.8507692484634, 
+   "seal_mises_max_local_angle_deg": -5.308864131534, 
+   "pressure_mpa": 9.0, 
+   "concrete_max_principal_max_mpa": 82.68859104369777, 
+   "mean_contact_pressure_resultant_mpa": 8.092507562367075
+  }, 
+  {
+   "seal_surface_peaks": {
+    "seal_outer": {
+     "mises_mpa": 315.9325732864914, 
+     "local_angle_deg": -7.048154179881, 
+     "mises_unaveraged_max_mpa": 315.9445806969237
+    }, 
+    "seal_inner": {
+     "mises_mpa": 409.26396507526135, 
+     "local_angle_deg": -5.308864131534, 
+     "mises_unaveraged_max_mpa": 409.27233960051353
+    }
+   }, 
+   "mean_contact_pressure_lining_stress_mpa": 8.968931777650745, 
+   "rock_operational_plastic": {
+    "reaches_outer_ring": null, 
+    "max_norm": null, 
+    "outer_radius_m": null, 
+    "area_any_ip_m2": null, 
+    "area_mean_m2": null
+   }, 
+   "mean_void_ur_mm": 10.541226757714508, 
+   "tie_displacement_gap_mm": 0.0, 
+   "seal_mises_max_surface": "inner", 
+   "seal_mises_max_mpa": 409.26396507526135, 
+   "mean_contact_pressure_rock_stress_mpa": 8.97332147816935, 
+   "step": "P100", 
+   "mean_contact_ur_mm": 5.980792964329077, 
+   "seal_mises_integration_point_max_mpa": 398.7230625719482, 
+   "seal_mises_max_local_angle_deg": -5.308864131534, 
+   "pressure_mpa": 10.0, 
+   "concrete_max_principal_max_mpa": 91.87620548846371, 
+   "mean_contact_pressure_resultant_mpa": 8.991675067706606
+  }
+ ], 
+ "plastic_threshold": 1e-06, 
+ "odb": "C:\\Users\\Administrator\\Desktop\\wj20260902\\V5_B10_EL_medium.odb", 
+ "rock_model": "el"
+}

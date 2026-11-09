@@ -1,0 +1,6 @@
+﻿quantity,fe,sa,diff_percent
+mean contact pressure (resultant) MPa,8.99168,8.99204,-0.00406851
+mean contact u_r mm,5.98079,5.97557,0.0874065
+mean void u_r mm,10.5412,10.5623,-0.1996
+seal max von Mises MPa (surface nodes),409.264,410.075,-0.197729
+seal max von Mises MPa (FE integration points),398.723,410.075,-2.76821

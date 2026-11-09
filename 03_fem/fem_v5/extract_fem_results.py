@@ -235,6 +235,7 @@ def extract(odb_path, meta_path, out):
     sn = meta["surface_nodes"]
     is_void = (np.abs(phi) < half - 1e-9) if beta > 0 else np.zeros(len(phi), bool)
     contact_lo, contact_hi = half, 360.0 - half
+    phi_sorted = np.sort(phi)
 
     odb = openOdb(path=args.odb, readOnly=True)
     asm = odb.rootAssembly
@@ -346,7 +347,11 @@ def extract(odb_path, meta_path, out):
         by_angle = {}
         for k, n in enumerate(nodes):
             x, y = xy[int(n)]
-            a = round((math.degrees(math.atan2(y, x)) - 90.0 + 180.0) % 360.0 - 180.0, 6)
+            a = (math.degrees(math.atan2(y, x)) - 90.0 + 180.0) % 360.0 - 180.0
+            # Snap to the exact mesh angle: ODB coordinates are single precision,
+            # so nodes on one radial line give slightly different atan2 values.
+            j = int(np.argmin(np.abs((phi_sorted - a + 180.0) % 360.0 - 180.0)))
+            a = float(phi_sorted[j])
             by_angle[a] = max(by_angle.get(a, -1e30), max_principal(data[k]))
         conc_rows = sorted((a, v / 1e6) for a, v in by_angle.items())
         write_csv(os.path.join(args.out, step + "_concrete.csv"),

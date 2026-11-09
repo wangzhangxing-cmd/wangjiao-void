@@ -58,6 +58,8 @@ abaqus python build_fem_model.py --beta 10 --rock ep --mesh medium --pressures 1
 abaqus job=V5_B10_EP_medium input=V5_B10_EP_medium.inp cpus=8 interactive
 ```
 
+每个分析步只输出最后一个增量步（`*Output, field, frequency=10000`，Abaqus 总会写出分析步的最后一个增量步）。
+
 弹塑性模型用了非对称求解器（`unsymm=YES`，非关联流动需要）。如果某个压力步不收敛，可以把该步 `*Static` 的初始增量从 0.1 改成 0.02。
 
 ## 提取结果

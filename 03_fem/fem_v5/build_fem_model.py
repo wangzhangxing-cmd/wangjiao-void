@@ -436,7 +436,7 @@ def build(beta_deg, rock_model, mesh_name, pressures_mpa,
     rock_out = ("*Element Output, elset=ROCKIN-1.ALL, directions=YES\nPE, PEEQ\n"
                 "*Element Output, elset=ROCKOUT-1.ALL, directions=YES\nPE, PEEQ\n"
                 if rock_model == "ep" else "")
-    field = ("*Output, field, number interval=1\n*Node Output\nU, RF\n"
+    field = ("*Output, field, frequency=10000\n*Node Output\nU, RF\n"
              "*Element Output, directions=YES\nS, E, NFORC\n" + rock_out +
              "*Output, history, variable=PRESELECT\n")
 

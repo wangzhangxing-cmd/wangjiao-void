@@ -1,0 +1,27 @@
+{
+  "python_files": 18,
+  "syntax_errors": [],
+  "hash_errors": [],
+  "imports": [
+    "axisymmetric_closed_form_reference.py",
+    "axisymmetric_nonassociated_history.py",
+    "batch_nonassociated.py",
+    "coupled_void_nonassociated.py",
+    "layered_ring_operator.py",
+    "local_void_interface.py",
+    "mohr_coulomb_nonassociated.py",
+    "nonaxisymmetric_nonassociated_domain.py",
+    "rock_wall_eigenstrain.py",
+    "run_b10_integer_pressure_states.py",
+    "run_b10_panel_convergence_9mpa.py",
+    "run_chapter3_convergence.py",
+    "run_nonaxisymmetric_excavation.py",
+    "seal_stress_recovery.py",
+    "section_properties.py",
+    "traction_cell_response.py"
+  ],
+  "plotting_code_found": [],
+  "passed": true,
+  "abaqus_extractor": "静态语法通过，实际执行需要Abaqus的odbAccess",
+  "full_simulation_rerun": false
+}

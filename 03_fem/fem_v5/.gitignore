@@ -1,0 +1,15 @@
+models/
+results_*/
+*.odb
+*.dat
+*.msg
+*.sta
+*.prt
+*.com
+*.sim
+*.lck
+*.res
+*.stt
+*.mdl
+*.023
+__pycache__/

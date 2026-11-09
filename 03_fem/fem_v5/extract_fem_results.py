@@ -159,7 +159,7 @@ def element_geometry(instance):
 
 def plastic_by_element(frame, instance):
     """Element-mean plastic strain (11, 22, 33, 12 engineering) and per-IP list."""
-    if "PE" not in frame.fieldOutputs:
+    if "PE" not in frame.fieldOutputs.keys():
         return {}
     data, _, elems = blocks(frame.fieldOutputs["PE"].getSubset(
         region=instance, position=INTEGRATION_POINT))
@@ -173,6 +173,17 @@ def tensor_norm(pe):
     """Frobenius norm with tensor shear (Abaqus PE12 is engineering gamma)."""
     pe = np.atleast_2d(pe)
     return np.sqrt(pe[:, 0] ** 2 + pe[:, 1] ** 2 + pe[:, 2] ** 2 + 0.5 * pe[:, 3] ** 2)
+
+
+def plain_str(value):
+    """Python 2: json gives ``unicode``; Abaqus repositories need ``str`` keys."""
+    if PY2 and isinstance(value, unicode):  # noqa: F821  (Python 2 only)
+        return value.encode("ascii")
+    if isinstance(value, dict):
+        return dict((plain_str(k), plain_str(v)) for k, v in value.items())
+    if isinstance(value, list):
+        return [plain_str(v) for v in value]
+    return value
 
 
 # --------------------------------------------------------------------------
@@ -204,7 +215,7 @@ def main():
             print("No ODB with a matching _meta.json in", os.getcwd())
     for odb_path, meta_path, out in jobs:
         print("extracting", odb_path)
-        extract(odb_path, meta_path, out)
+        extract(str(odb_path), str(meta_path), str(out))
 
 
 class _Args(object):
@@ -214,7 +225,7 @@ class _Args(object):
 
 def extract(odb_path, meta_path, out):
     args = _Args(odb_path, meta_path, out)
-    meta = json.load(open(args.meta))
+    meta = plain_str(json.load(open(args.meta)))
     if not os.path.isdir(args.out):
         os.makedirs(args.out)
     beta = float(meta["void_angle_deg"])
@@ -251,8 +262,10 @@ def extract(odb_path, meta_path, out):
             exc_rmax = max(exc_rmax, math.hypot(cx, cy))
 
     summaries = []
+    available = [str(k) for k in odb.steps.keys()]
     for step in meta["pressure_steps"]:
-        if step not in odb.steps:
+        step = str(step)
+        if step not in available:
             print("missing step", step)
             continue
         frame = odb.steps[step].frames[-1]
@@ -342,7 +355,7 @@ def extract(odb_path, meta_path, out):
         # ---- rock plasticity relative to installation
         plastic = dict(area_mean_m2=None, area_any_ip_m2=None, outer_radius_m=None,
                        reaches_outer_ring=None, max_norm=None)
-        if "PE" in frame.fieldOutputs:
+        if "PE" in frame.fieldOutputs.keys():
             area_mean = area_any = 0.0
             rmax, nmax, outer_hit = 0.0, 0.0, False
             cell_rows = []

@@ -1,0 +1,65 @@
+{
+ "seal_mises_max_mpa": {
+  "values_last_three": [
+   412.185309138378,
+   410.67411424550147,
+   410.09554325808665
+  ],
+  "observed_order": 1.3851238453262442,
+  "extrapolated": 409.7366157359442,
+  "finest_relative_error_percent": 0.08759957210506819,
+  "gci_fine_percent": 0.10940362802130703
+ },
+ "void_ur_mm": {
+  "values_last_three": [
+   10.604065485630981,
+   10.575964800694388,
+   10.562309220409077
+  ],
+  "observed_order": 1.041114673836811,
+  "extrapolated": 10.549400011550418,
+  "finest_relative_error_percent": 0.12236912852412463,
+  "gci_fine_percent": 0.15277446187756022
+ },
+ "q_mean_mpa": {
+  "values_last_three": [
+   8.991944355980467,
+   8.992009320349927,
+   8.992040911799567
+  ],
+  "observed_order": 1.0401145308402457,
+  "extrapolated": 8.992070816875168,
+  "finest_relative_error_percent": -0.0003325716201652007,
+  "gci_fine_percent": 0.00041571590775781335
+ },
+ "q_endpoint_panel_mpa": {
+  "values_last_three": [
+   142.90902036051418,
+   202.64745550138835,
+   285.5350353588749
+  ],
+  "note": "non-monotone or not reducing; no extrapolation"
+ },
+ "seal_mises_max_beyond_1deg_mpa": {
+  "values_last_three": [
+   363.2581591872397,
+   362.02367836005766,
+   361.4072789160143
+  ],
+  "observed_order": 1.0019669643071432,
+  "extrapolated": 360.79255683413004,
+  "finest_relative_error_percent": 0.1703810320474286,
+  "gci_fine_percent": 0.21261403607034518
+ },
+ "seal_mises_max_beyond_2deg_mpa": {
+  "values_last_three": [
+   332.8544248846429,
+   332.0717761830139,
+   331.6881165776216
+  ],
+  "observed_order": 1.0285380121463519,
+  "extrapolated": 331.31919749136546,
+  "finest_relative_error_percent": 0.11134853912766474,
+  "gci_fine_percent": 0.13903086507238382
+ }
+}

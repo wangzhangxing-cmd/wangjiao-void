@@ -1,0 +1,11 @@
+﻿lining,pressure_mpa,critical_beta_deg,p_y_monotone_in_beta
+cracked,4,19.1077392,True
+cracked,6,14.927264,True
+cracked,8,12.3022844,True
+cracked,10,10.1935322,True
+cracked,12,8.39041559,True
+uncracked,4,nan,True
+uncracked,6,nan,True
+uncracked,8,25.0778357,True
+uncracked,10,21.3718937,True
+uncracked,12,18.3432037,True

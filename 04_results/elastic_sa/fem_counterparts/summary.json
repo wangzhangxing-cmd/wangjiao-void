@@ -1,0 +1,40 @@
+{
+ "B00_EL": {
+  "step": "P100",
+  "pressure_mpa": 10.0,
+  "q_mean_mpa": 8.752412431575104,
+  "q_max_mpa": 8.752412431575104,
+  "q_min_mpa": 8.752412431575104,
+  "q_endpoint_panel_mpa": 8.752412431575104,
+  "contact_ur_mm": 5.973521484550009,
+  "void_ur_mm": NaN,
+  "seal_mises_max_mpa": 213.47271257114807,
+  "seal_peak_local_angle_deg": 0.0,
+  "seal_peak_surface": "inner",
+  "seal_hoop_membrane_at_peak_mpa": 230.98753429727327,
+  "seal_hoop_bending_at_peak_mpa": 0.1606582847480029,
+  "linear_relative_residual": 0.0,
+  "force_torque_balance_gap_pa": 0.0
+ },
+ "B10_EL": {
+  "step": "P100",
+  "panels": 2048,
+  "pressure_mpa": 10.0,
+  "q_mean_mpa": 8.991944355980467,
+  "q_max_mpa": 142.90902036051418,
+  "q_min_mpa": 8.462834482913234,
+  "q_endpoint_panel_mpa": 142.90902036051418,
+  "contact_ur_mm": 5.975608352970637,
+  "void_ur_mm": 10.604065485630981,
+  "seal_mises_max_mpa": 412.185309138378,
+  "seal_peak_local_angle_deg": 5.300000000000011,
+  "seal_peak_surface": "inner",
+  "seal_mises_max_beyond_1deg_mpa": 363.2581591872397,
+  "seal_mises_max_beyond_2deg_mpa": 332.8544248846429,
+  "seal_mises_max_beyond_5deg_mpa": 299.08252992508335,
+  "seal_hoop_membrane_at_peak_mpa": 340.4149590904102,
+  "seal_hoop_bending_at_peak_mpa": 114.32167202755026,
+  "linear_relative_residual": 2.7113438762282205e-12,
+  "force_torque_balance_gap_pa": 1.3271628631628118e-06
+ }
+}

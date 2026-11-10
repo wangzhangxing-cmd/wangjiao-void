@@ -9,7 +9,8 @@ rem  Edit JOBS and CPUS below.  Progress is written to models\run_log.txt.
 rem ------------------------------------------------------------------
 setlocal
 set CPUS=8
-set JOBS=V5_B00_EP_medium V5_B10_EP_medium V5_B10_EP_coarse
+rem V5_B00_EP_medium is already done; add V5_B10_EP_fine at the end if time allows.
+set JOBS=V5_B10_EP_medium V5_B10_EP_coarse
 
 cd /d "%~dp0models"
 echo ==== start %date% %time% ==== >> run_log.txt

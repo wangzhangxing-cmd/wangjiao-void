@@ -60,13 +60,18 @@ except NameError:                      # Abaqus/CAE "Run Script" may not set __f
 
 MESH_PRESETS = {
     # theta sizes in degrees, radial sizes in metres
-    "coarse": dict(theta_min=0.10, theta_max=1.00, theta_growth=1.15, seal_layers=2,
+    # theta_* : lining/seal grid (graded to the void endpoints, resolves the seal peak)
+    # rock_theta_min : rock-wall grid at the endpoints.  Kept coarser than the
+    #   lining because the bonded/free corner is a stress singularity: refining the
+    #   rock there concentrates plastic strain in a few tiny elements and stalls
+    #   the Mohr-Coulomb return mapping (observed in V5_B10_EP_medium, 2026-11-10).
+    "coarse": dict(theta_min=0.10, theta_max=1.00, theta_growth=1.15, rock_theta_min=0.50, seal_layers=2,
                    lining_dr=0.050, rock_dr0=0.020, rock_growth=1.10,
                    outer_theta_cells=360, outer_aspect=4.0),
-    "medium": dict(theta_min=0.04, theta_max=0.50, theta_growth=1.10, seal_layers=4,
+    "medium": dict(theta_min=0.04, theta_max=0.50, theta_growth=1.10, rock_theta_min=0.25, seal_layers=4,
                    lining_dr=0.025, rock_dr0=0.010, rock_growth=1.08,
                    outer_theta_cells=720, outer_aspect=4.0),
-    "fine": dict(theta_min=0.015, theta_max=0.25, theta_growth=1.07, seal_layers=6,
+    "fine": dict(theta_min=0.015, theta_max=0.25, theta_growth=1.07, rock_theta_min=0.125, seal_layers=6,
                  lining_dr=0.0125, rock_dr0=0.005, rock_growth=1.06,
                  outer_theta_cells=1440, outer_aspect=4.0),
 }
@@ -147,12 +152,14 @@ def graded_segment(length, h_min, h_max, growth):
     return np.r_[sizes[0], rest]
 
 
-def theta_breaks(beta_deg, mesh):
+def theta_breaks(beta_deg, mesh, h_min=None):
     """Corner angles in the local system phi (0 = crown), ascending in [-180,180).
 
     Void endpoints at +-beta/2 are nodes; the mesh is symmetric about the crown.
     """
     hmin, hmax, g = mesh["theta_min"], mesh["theta_max"], mesh["theta_growth"]
+    if h_min is not None:
+        hmin = min(h_min, hmax)
     if beta_deg <= 0.0:
         n = int(math.ceil(360.0 / hmax / 4.0)) * 4
         return -180.0 + np.arange(n) * 360.0 / n
@@ -312,9 +319,10 @@ def build(beta_deg, rock_model, mesh_name, pressures_mpa,
     job = job or "V5_B%02d_%s_%s" % (int(round(beta_deg)), rock_model.upper(), mesh_name)
 
     phi = theta_breaks(beta_deg, mesh)
+    phi_rock = theta_breaks(beta_deg, mesh, mesh["rock_theta_min"])
     lr, rows = liner_radii(mesh)
     liner = Annulus(lr, phi)
-    rin = Annulus(rock_inner_radii(R, r_tie, mesh), phi)
+    rin = Annulus(rock_inner_radii(R, r_tie, mesh), phi_rock)
     n_out = mesh["outer_theta_cells"]
     rout = Annulus(rock_outer_radii(r_tie, r_out, n_out, mesh["outer_aspect"]),
                    -180.0 + np.arange(n_out) * 360.0 / n_out)
@@ -359,7 +367,7 @@ def build(beta_deg, rock_model, mesh_name, pressures_mpa,
                              if not in_void(rin.element_mid_phi(j))],
         "TIE_ROW": [rin.element_label(rin.nr - 1, j) for j in range(rin.nt)],
     }
-    wall_nodes, _ = rin.ring_nodes(0)
+    wall_nodes, wall_phi = rin.ring_nodes(0)
     rin_nsets = {"WALL_N": wall_nodes}
     rin_surfaces = {"WALL": ("WALL_ROW", "S4"), "WALL_CONTACT": ("WALL_CONTACT_ROW", "S4"),
                     "TIE_OUT": ("TIE_ROW", "S2")}
@@ -382,10 +390,15 @@ def build(beta_deg, rock_model, mesh_name, pressures_mpa,
         ann.check_orientation(coords)
     lc = {lab: (x, y) for lab, x, y in liner.nodes()}
     rc = {lab: (x, y) for lab, x, y in rin.nodes()}
-    gap = max(math.hypot(lc[a][0] - rc[b][0], lc[a][1] - rc[b][1])
-              for a, b in zip(liner_out_nodes, wall_nodes))
-    if gap > 1.0e-9:
-        raise AssertionError("Liner outer and rock wall nodes do not coincide")
+    # Both grids contain the void endpoints and lie on r = 6.5 m (non-matching tie).
+    for nodes, ann, ring in ((liner_out_nodes, lc, "liner"), (wall_nodes, rc, "rock")):
+        radius = max(abs(math.hypot(*ann[n]) - R) for n in nodes)
+        if radius > 1.0e-9:
+            raise AssertionError("%s interface nodes are not on r = R" % ring)
+    if beta_deg > 0.0:
+        for grid in (phi, phi_rock):
+            if not (np.any(np.isclose(grid, half)) and np.any(np.isclose(grid, -half))):
+                raise AssertionError("Void endpoint missing from an interface grid")
     oc = {lab: (x, y) for lab, x, y in rout.nodes()}
     for name, idx in (("FIX_Y", 0), ("FIX_Y", 1), ("FIX_X", 0)):
         x, y = oc[support[name][idx]]
@@ -406,6 +419,7 @@ def build(beta_deg, rock_model, mesh_name, pressures_mpa,
     for inst, part in (("LINER-1", "LINER"), ("ROCKIN-1", "ROCKIN"), ("ROCKOUT-1", "ROCKOUT")):
         o.append("*Instance, name=%s, part=%s\n*End Instance" % (inst, part))
     o.append("** Liner contact arc bonded to the rock wall; the void arc is free.")
+    o.append("** Lining grid is finer than the rock grid: lining = slave (non-matching tie).")
     o.append("*Tie, name=LINER-ROCK, adjust=NO, type=NODE TO SURFACE\n"
              "LINER-1.OUTER_CONTACT, ROCKIN-1.WALL_CONTACT")
     o.append("*Tie, name=ROCK-RING, adjust=YES, type=SURFACE TO SURFACE\n"
@@ -431,7 +445,12 @@ def build(beta_deg, rock_model, mesh_name, pressures_mpa,
              "ROCKOUT-1.ALL, %.6e, %.6e, %.6e, 0." % ((-p0,) * 6))
 
     unsymm = "YES" if rock_model == "ep" else "NO"
-    controls = ("*Controls, analysis=discontinuous\n*Controls, parameters=line search\n5\n"
+    # Solution controls of the converged V4 model: discontinuous analysis, 10%
+    # displacement-correction tolerance, line search, more attempts/cutbacks.
+    controls = ("*Controls, analysis=discontinuous\n"
+                "*Controls, parameters=field, field=displacement\n, 0.1\n"
+                "*Controls, parameters=line search\n5\n"
+                "*Controls, parameters=time incrementation\n, , , , , , 20, 15, , ,\n"
                 if rock_model == "ep" else "")
     rock_out = ("*Element Output, elset=ROCKIN-1.ALL, directions=YES\nPE, PEEQ\n"
                 "*Element Output, elset=ROCKOUT-1.ALL, directions=YES\nPE, PEEQ\n"
@@ -454,9 +473,12 @@ def build(beta_deg, rock_model, mesh_name, pressures_mpa,
              "*Model Change, add\nLINER-1.ALL,\n%s*End Step" % (unsymm, field))
     for p in pressures_mpa:
         name = "P%03d" % int(round(10 * p))
-        o.append("*Step, name=%s, nlgeom=NO, inc=10000, unsymm=%s\n*Static\n"
-                 "0.1, 1., 1e-06, 0.25\n%s*Dsload, op=MOD\nLINER-1.SEAL_INNER, P, %.6e\n%s*End Step"
-                 % (name, unsymm, controls, p * 1.0e6, field))
+        # elastic: one increment suffices; plastic: max 0.1 MPa per increment
+        # (the semi-analytical history uses 0.1 MPa steps).
+        inc_line = "0.05, 1., 1e-08, 0.1" if rock_model == "ep" else "0.5, 1., 1e-06, 1."
+        o.append("*Step, name=%s, nlgeom=NO, inc=100000, unsymm=%s\n*Static\n"
+                 "%s\n%s*Dsload, op=MOD\nLINER-1.SEAL_INNER, P, %.6e\n%s*End Step"
+                 % (name, unsymm, inc_line, controls, p * 1.0e6, field))
 
     if not os.path.isdir(out_dir):
         os.makedirs(out_dir)
@@ -476,6 +498,7 @@ def build(beta_deg, rock_model, mesh_name, pressures_mpa,
                     rock_outer_theta_cells=int(rout.nt),
                     elements=int(liner.nr * liner.nt + rin.nr * rin.nt + rout.nr * rout.nt)),
         min_theta_cell_deg=float(np.min(np.diff(np.r_[phi, phi[0] + 360]))),
+        min_rock_theta_cell_deg=float(np.min(np.diff(np.r_[phi_rock, phi_rock[0] + 360]))),
         liner_layers=[dict(row=i, material=m) for i, (m, _) in enumerate(rows)],
         rc_layers=[dict(name="RC%d" % (k + 1), label=s.material.name,
                         r_in=s.inner_radius_m, r_out=s.outer_radius_m,
@@ -483,7 +506,8 @@ def build(beta_deg, rock_model, mesh_name, pressures_mpa,
         surface_nodes=dict(
             phi_deg=[float(v) for v in seal_phi],
             seal_inner=seal_in_nodes, seal_outer=seal_out_nodes,
-            liner_outer=liner_out_nodes, rock_wall=wall_nodes),
+            liner_outer=liner_out_nodes, rock_wall=wall_nodes,
+            rock_phi_deg=[float(v) for v in wall_phi]),
         rock_inner_radii=[float(v) for v in rin.r],
         material=dict(rock=ROCK, steel=STEEL, abaqus_mohr_coulomb=(
             "Abaqus smooths the Mohr-Coulomb flow potential (meridional eccentricity 0.1, "

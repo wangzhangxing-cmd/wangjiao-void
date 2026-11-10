@@ -241,6 +241,8 @@ def extract(odb_path, meta_path, out):
     is_void = (np.abs(phi) < half - 1e-9) if beta > 0 else np.zeros(len(phi), bool)
     contact_lo, contact_hi = half, 360.0 - half
     phi_sorted = np.sort(phi)
+    phi_rock = np.array(sn.get("rock_phi_deg", meta["surface_nodes"]["phi_deg"]), float)
+    theta_rock = np.radians(phi_rock + 90.0)
 
     odb = openOdb(path=args.odb, readOnly=True)
     asm = odb.rootAssembly
@@ -307,27 +309,35 @@ def extract(odb_path, meta_path, out):
                    "szz_mpa", "srt_mpa", "mises_mpa", "mises_unaveraged_max_mpa"), seal_rows)
 
         # ---- interface: displacements and tractions
+        # Rock-wall quantities live on the rock grid (may be coarser than the
+        # lining grid since v5.1); they are interpolated to the lining angles.
         rock_s, _ = nodal_average(frame, wall_row, "S", sn["rock_wall"])
         lin_s, _ = nodal_average(frame, out_row, "S", sn["liner_outer"])   # local r, theta
+        rvals = []
+        for k, nr in enumerate(sn["rock_wall"]):
+            t = theta_rock[k]
+            rr_, rt_ = polar_u(u_r[nr] - u0_rock[nr], t)
+            srr, _, _, srt = to_polar(rock_s[nr], t)
+            rvals.append((rr_, rt_, -srr, srt))
+        rvals = np.array(rvals)
+        order_r = np.argsort(phi_rock)
+        rock_at = [np.interp(phi, phi_rock[order_r], rvals[order_r, c], period=360.0)
+                   for c in range(4)]
         rows, ur_l, q_rock, q_lin, gap = [], [], [], [], 0.0
-        for k, (nl, nr) in enumerate(zip(sn["liner_outer"], sn["rock_wall"])):
-            ul = u_l[nl] - u0_liner[nl]
-            ur = u_r[nr] - u0_rock[nr]
-            lr_, lt_ = polar_u(ul, theta[k])
-            rr_, rt_ = polar_u(ur, theta[k])
-            srr, _, _, srt = to_polar(rock_s[nr], theta[k])
-            qr, tr = -srr, srt
+        for k, nl in enumerate(sn["liner_outer"]):
+            lr_, lt_ = polar_u(u_l[nl] - u0_liner[nl], theta[k])
+            rr_, rt_, qr, tr = (float(rock_at[c][k]) for c in range(4))
             ql, tl = -lin_s[nl][0], lin_s[nl][3]
             if not is_void[k]:      # bonded nodes, void endpoints included
                 gap = max(gap, math.hypot(lr_ - rr_, lt_ - rt_))
-            rows.append((int(nl), int(nr), float(phi[k]), float(phi[k] + 90.0) % 360.0,
+            rows.append((int(nl), float(phi[k]), float(phi[k] + 90.0) % 360.0,
                          int(is_void[k]), lr_ * 1e3, lt_ * 1e3, rr_ * 1e3, rt_ * 1e3,
                          qr / 1e6, tr / 1e6, ql / 1e6, tl / 1e6))
             ur_l.append(lr_)
             q_rock.append(qr)
             q_lin.append(ql)
         write_csv(os.path.join(args.out, step + "_interface.csv"),
-                  ("liner_node", "rock_node", "local_angle_deg", "theta_deg", "void",
+                  ("liner_node", "local_angle_deg", "theta_deg", "void",
                    "lining_ur_mm", "lining_ut_mm", "rock_ur_mm", "rock_ut_mm",
                    "q_rock_side_mpa", "tau_rock_side_mpa", "q_lining_side_mpa",
                    "tau_lining_side_mpa"), rows)

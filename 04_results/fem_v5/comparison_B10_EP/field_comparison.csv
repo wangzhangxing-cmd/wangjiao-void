@@ -1,0 +1,5 @@
+﻿mesh,step,quantity,fe_max,sa_max,max_diff_percent,fe_max_angle_deg,sa_max_angle_deg,rel_l2_percent
+coarse,P050,seal_inner_mises_mpa,194.828,202.611,-3.8411,-5.50047,-5.32,2.30068
+coarse,P050,lining_ur_mm,6.53042,6.37454,2.44528,0,4.09273e-11,2.22357
+coarse,P100,seal_inner_mises_mpa,390.346,397.11,-1.70332,5.87756,-5.33,3.5106
+coarse,P100,lining_ur_mm,15.0143,14.2979,5.01057,0,4.09273e-11,3.67555

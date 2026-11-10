@@ -1,0 +1,16 @@
+本文件夹含8个分卷，每份均小于25 MB（25,000,000字节）。
+前7份各24,000,000字节，最后一份10,855,975字节。
+
+合并方法：
+1. 将全部8个kernel.npz.part文件、manifest.json、merge_kernel.py放在同一文件夹。
+2. Windows安装Python 3.11或以上版本后，双击merge_kernel.bat；也可在该文件夹运行 python merge_kernel.py。
+3. 程序自动校验每个分卷并合并，在同一文件夹生成kernel.npz。
+
+合并后的文件是无损压缩NPZ，可由numpy.load正常读取。
+合并不需要安装NumPy或SciPy，仅需要Python标准库。
+请勿逐个解压分卷，也不要缺卷。分卷本身不能直接用于计算。
+已有kernel.npz时程序会停止，避免覆盖。
+
+合并后文件大小：178,855,975字节。
+SHA256：b0ca3b33e154c142ab20be79079b55a9187698d3028a60012bafc658bbc6ec3b
+该压缩文件内全部数组与原64×512围岩kernel.npz逐字节一致，未降低数值精度。

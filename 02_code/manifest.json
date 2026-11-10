@@ -1,0 +1,48 @@
+{
+  "output_file": "kernel.npz",
+  "total_bytes": 178855975,
+  "sha256": "b0ca3b33e154c142ab20be79079b55a9187698d3028a60012bafc658bbc6ec3b",
+  "part_limit_bytes": 24000000,
+  "parts": [
+    {
+      "file": "kernel.npz.part001",
+      "bytes": 24000000,
+      "sha256": "5827224300b47b4340f43345254b704f66ab0f1de8569e2c888a04d6ed6609d2"
+    },
+    {
+      "file": "kernel.npz.part002",
+      "bytes": 24000000,
+      "sha256": "6d2a884d752b9e96e802bca3e68a0b30db189e81281ca1b61007af40c3571534"
+    },
+    {
+      "file": "kernel.npz.part003",
+      "bytes": 24000000,
+      "sha256": "e9867d4d8539680126ebc26451b543f541a9836bff91a3c67c384d16a41e9866"
+    },
+    {
+      "file": "kernel.npz.part004",
+      "bytes": 24000000,
+      "sha256": "693a11c08fec2299887b0f43f7c38fa77edc4cad758b97847cdd25be8f58f284"
+    },
+    {
+      "file": "kernel.npz.part005",
+      "bytes": 24000000,
+      "sha256": "e3507ab6c313ff755555976f5552cfd2782e7d91b29b8bb7ca9343699b313a99"
+    },
+    {
+      "file": "kernel.npz.part006",
+      "bytes": 24000000,
+      "sha256": "fd1da6126c518a5a31feebf90a0081c260b9c24cc843b8cd62d1390322915e5a"
+    },
+    {
+      "file": "kernel.npz.part007",
+      "bytes": 24000000,
+      "sha256": "ed090cb005c93e701c99107584843136806e0c9e9710a9c84f8ac7406da9f63c"
+    },
+    {
+      "file": "kernel.npz.part008",
+      "bytes": 10855975,
+      "sha256": "0d7f17b5688aba13de236bc4573f15062ed2c7394d172db8c68bbd358e27f1d4"
+    }
+  ]
+}

@@ -131,3 +131,15 @@ abaqus python extract_fem_results.py --odb V5_B10_EP_medium.odb --meta models/V5
 3. 确定后输入 Windows 账户密码。到时间后任务自动开始，可以断开远程桌面。
 4. 查看进度：`models\run_log.txt`，以及各作业的 `.sta` 文件。
 
+## 作业约 30 分钟被外部终止时：自动续算
+
+`V5_B10_EP_medium` 两次都在运行约 30 分钟时被外部终止（墙钟时间 1823 s 和 1927 s，`.msg` 显示 SIGTERM），而当时计算都在正常推进；一次通过远程桌面在 CAE 中提交，一次通过任务计划程序提交。所以这是运行环境中的时长限制，与模型无关。
+
+对策：弹塑性模型从 EXCAVATE 步起，每个增量步写一次续算数据（`*Restart, write, frequency=1, overlay`，只保留最新一份）。
+
+- `continue_job.py`：找到作业链（`JOB`、`JOB_R1`、`JOB_R2`……）中最新一段的最后一个收敛增量步，生成 `JOB_R<k>.inp`（`*Restart, read` 加上其后各分析步），并写出 `next_job.txt`。
+- `run_models.bat`：作业未完成时自动调用 `continue_job.py`，并运行 `abaqus job=JOB_R<k> oldjob=<上一段>`，最多续算 `MAXRESTARTS` 次。
+- `extract_fem_results.py`：自动读取整个作业链，每个分析步取自把它完整算完的那一段。
+
+注意：续算需要原作业的 `.res`、`.mdl`、`.stt`、`.prt`、`.odb` 文件，不要删除。只有用加入续算输出之后的 `.inp` 算的作业才能续算，之前中断的作业要重新开始。
+

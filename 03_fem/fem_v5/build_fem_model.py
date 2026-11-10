@@ -455,6 +455,9 @@ def build(beta_deg, rock_model, mesh_name, pressures_mpa,
     rock_out = ("*Element Output, elset=ROCKIN-1.ALL, directions=YES\nPE, PEEQ\n"
                 "*Element Output, elset=ROCKOUT-1.ALL, directions=YES\nPE, PEEQ\n"
                 if rock_model == "ep" else "")
+    # Restart data after every increment, latest one only (OVERLAY), so a job
+    # terminated from outside can be continued with continue_job.py.
+    restart = "*Restart, write, frequency=1, overlay\n" if rock_model == "ep" else ""
     field = ("*Output, field, frequency=10000\n*Node Output\nU, RF\n"
              "*Element Output, directions=YES\nS, E, NFORC\n" + rock_out +
              "*Output, history, variable=PRESELECT\n")
@@ -467,18 +470,18 @@ def build(beta_deg, rock_model, mesh_name, pressures_mpa,
     o.append("*Step, name=EXCAVATE, nlgeom=NO, inc=10000, unsymm=%s\n*Static\n"
              "%.8g, 1., %.3g, %.8g\n%s"
              "** support pressure ramped linearly p0 -> 0 (default static ramp)\n"
-             "*Dsload, op=MOD\nROCKIN-1.WALL, P, 0.\n%s*End Step"
-             % (unsymm, dt, dt * 1.0e-4, dt, controls, field))
+             "*Dsload, op=MOD\nROCKIN-1.WALL, P, 0.\n%s%s*End Step"
+             % (unsymm, dt, dt * 1.0e-4, dt, controls, restart, field))
     o.append("*Step, name=ADD-LINING, nlgeom=NO, unsymm=%s\n*Static\n1., 1., 1e-05, 1.\n"
-             "*Model Change, add\nLINER-1.ALL,\n%s*End Step" % (unsymm, field))
+             "*Model Change, add\nLINER-1.ALL,\n%s%s*End Step" % (unsymm, restart, field))
     for p in pressures_mpa:
         name = "P%03d" % int(round(10 * p))
         # elastic: one increment suffices; plastic: max 0.1 MPa per increment
         # (the semi-analytical history uses 0.1 MPa steps).
         inc_line = "0.05, 1., 1e-08, 0.1" if rock_model == "ep" else "0.5, 1., 1e-06, 1."
         o.append("*Step, name=%s, nlgeom=NO, inc=100000, unsymm=%s\n*Static\n"
-                 "%s\n%s*Dsload, op=MOD\nLINER-1.SEAL_INNER, P, %.6e\n%s*End Step"
-                 % (name, unsymm, inc_line, controls, p * 1.0e6, field))
+                 "%s\n%s*Dsload, op=MOD\nLINER-1.SEAL_INNER, P, %.6e\n%s%s*End Step"
+                 % (name, unsymm, inc_line, controls, p * 1.0e6, restart, field))
 
     if not os.path.isdir(out_dir):
         os.makedirs(out_dir)

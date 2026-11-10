@@ -31,6 +31,9 @@ Per pressure step the script writes (``<step>`` = P010 ... P100):
 * ``<step>_rock_plastic_cells.csv`` (EP only) elements with operational
   plastic strain increment norm > threshold.
 * ``summary.json`` / ``summary.csv`` one row per step with all scalar metrics.
+
+Restarted jobs: if ``JOB_R1.odb``, ``JOB_R2.odb`` ... exist next to ``JOB.odb``
+(see continue_job.py), every step is read from the segment that completed it.
 """
 from __future__ import print_function
 
@@ -39,6 +42,7 @@ import csv
 import json
 import math
 import os
+import re
 import sys
 
 import numpy as np
@@ -209,6 +213,8 @@ def main():
             if not name.lower().endswith(".odb"):
                 continue
             job = name[:-4]
+            if re.search(r"_R\d+$", job):
+                continue                     # restart segment, read with its base job
             for folder in (os.getcwd(), os.path.join(os.getcwd(), "models")):
                 meta = os.path.join(folder, job + "_meta.json")
                 if os.path.isfile(meta):
@@ -244,22 +250,51 @@ def extract(odb_path, meta_path, out):
     phi_rock = np.array(sn.get("rock_phi_deg", meta["surface_nodes"]["phi_deg"]), float)
     theta_rock = np.radians(phi_rock + 90.0)
 
-    odb = openOdb(path=args.odb, readOnly=True)
-    asm = odb.rootAssembly
-    liner, rin, rout = (asm.instances["LINER-1"], asm.instances["ROCKIN-1"],
-                        asm.instances["ROCKOUT-1"])
-    seal_set, rc_set = liner.elementSets["SEAL"], liner.elementSets["RC"]
-    out_row = liner.elementSets["OUT_ROW"]
-    wall_row = rin.elementSets["WALL_ROW"]
+    # Restart chain JOB.odb, JOB_R1.odb, ...: every step is taken from the
+    # newest segment in which it ran to completion.
+    stem = os.path.splitext(args.odb)[0]
+    paths = [args.odb]
+    k = 1
+    while os.path.isfile("%s_R%d.odb" % (stem, k)):
+        paths.append("%s_R%d.odb" % (stem, k))
+        k += 1
+    odbs = [openOdb(path=str(p), readOnly=True) for p in paths]
+    if len(odbs) > 1:
+        print("restart chain:", ", ".join(os.path.basename(p) for p in paths))
 
-    base = odb.steps["ADD-LINING"].frames[-1]
-    excav = odb.steps["EXCAVATE"].frames[-1]
+    def complete_step(name):
+        for o in reversed(odbs):
+            if name not in [str(x) for x in o.steps.keys()]:
+                continue
+            st = o.steps[name]
+            if not len(st.frames):
+                continue
+            fr = st.frames[-1]
+            if abs(fr.frameValue - st.timePeriod) <= 1.0e-6 * max(1.0, st.timePeriod):
+                return o, fr
+        return None, None
+
+    def bind(o):
+        asm = o.rootAssembly
+        li, ri, ro = (asm.instances["LINER-1"], asm.instances["ROCKIN-1"],
+                      asm.instances["ROCKOUT-1"])
+        return (li, ri, ro, li.elementSets["SEAL"], li.elementSets["RC"],
+                li.elementSets["OUT_ROW"], ri.elementSets["WALL_ROW"])
+
+    odb_b, base = complete_step("ADD-LINING")
+    odb_e, excav = complete_step("EXCAVATE")
+    if base is None or excav is None:
+        raise RuntimeError("EXCAVATE / ADD-LINING not complete in " + ", ".join(paths))
+    liner, rin, rout, seal_set, rc_set, out_row, wall_row = bind(odb_b)
+    base_rin, base_rout = rin, rout
+    _, exc_rin, _, _, _, _, _ = bind(odb_e)
     xy = dict((n.label, n.coordinates[:2]) for n in liner.nodes)
     u0_liner = nodal_vector(base, liner)
     u0_rock = nodal_vector(base, rin)
     rock_geo = {"ROCKIN-1": element_geometry(rin), "ROCKOUT-1": element_geometry(rout)}
-    pe_base = {"ROCKIN-1": plastic_by_element(base, rin), "ROCKOUT-1": plastic_by_element(base, rout)}
-    pe_exc = plastic_by_element(excav, rin)
+    pe_base = {"ROCKIN-1": plastic_by_element(base, base_rin),
+               "ROCKOUT-1": plastic_by_element(base, base_rout)}
+    pe_exc = plastic_by_element(excav, exc_rin)
 
     # excavation-stage plasticity (compare with the semi-analytical installation state)
     exc_area, exc_rmax = 0.0, meta["radii"]["lining_outer"]
@@ -270,13 +305,13 @@ def extract(odb_path, meta_path, out):
             exc_rmax = max(exc_rmax, math.hypot(cx, cy))
 
     summaries = []
-    available = [str(k) for k in odb.steps.keys()]
     for step in meta["pressure_steps"]:
         step = str(step)
-        if step not in available:
-            print("missing step", step)
+        odb_s, frame = complete_step(step)
+        if frame is None:
+            print("missing or incomplete step", step)
             continue
-        frame = odb.steps[step].frames[-1]
+        liner, rin, rout, seal_set, rc_set, out_row, wall_row = bind(odb_s)
         p_mpa = float(meta["pressures_mpa"][meta["pressure_steps"].index(step)])
         u_l = nodal_vector(frame, liner)
         u_r = nodal_vector(frame, rin)
@@ -493,7 +528,8 @@ def extract(odb_path, meta_path, out):
                "seal_peak_local_angle_deg", "seal_mises_ip_max_mpa", "concrete_maxp_max_mpa",
                "matrix_maxp_max_mpa", "rebar_inner_max_mpa", "rebar_outer_max_mpa",
                "plastic_area_m2", "plastic_outer_radius_m", "tie_gap_mm"), flat)
-    odb.close()
+    for o in odbs:
+        o.close()
     print("written", os.path.abspath(args.out))
 
 

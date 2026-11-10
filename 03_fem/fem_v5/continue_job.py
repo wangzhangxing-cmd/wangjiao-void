@@ -51,6 +51,28 @@ def completed(sta_path):
         return b"COMPLETED SUCCESSFULLY" in handle.read()
 
 
+def diverged(job):
+    """True if the job stopped on its own (minimum increment), not killed."""
+    path = job + ".msg"
+    if not os.path.isfile(path):
+        return False
+    with open(path, "rb") as handle:
+        return b"TIME INCREMENT REQUIRED IS LESS THAN THE MINIMUM" in handle.read()
+
+
+RELAXED = ("*Controls, parameters=field, field=displacement\n"
+           "0.01, 1.0\n")
+
+
+def relax(block, suffix=""):
+    """Looser equilibrium tolerances (R_n 0.005 -> 0.01, C_n 0.1 -> 1.0)."""
+    block = re.sub(r"(?im)^\*Controls, parameters=field, field=displacement\s*\n[^\n]*\n", RELAXED, block)
+    if suffix:
+        block = re.sub(r"(?i)(\*Step, name=)([^,\s]+)", lambda m: m.group(1) + re.sub(r"_C\d+$", "", m.group(2)) + suffix, block, count=1)
+        block = re.sub(r"(?im)^(\*Static\s*\n)[^\n]*\n", r"\g<1>0.01, 1., 1e-10, 0.05\n", block)
+    return block
+
+
 def step_blocks(inp_path):
     """Original step definitions in order: list of text blocks."""
     with open(inp_path) as handle:
@@ -62,6 +84,21 @@ def step_blocks(inp_path):
         end = text.find("\n", end) + 1
         blocks.append(text[start:end])
     return blocks
+
+
+def timeline(members):
+    """Step definitions in analysis order for the chain up to members[-1].
+
+    A restart member R_k that reads step s continues with its own steps as
+    steps s+1, s+2, ... (with END STEP, step s is closed and the next one is a
+    new step), so the history is history[:s] + steps of R_k.
+    """
+    steps = step_blocks(members[0] + ".inp")
+    for m in members[1:]:
+        text = open(m + ".inp").read()
+        r = re.search(r"(?im)^\*Restart,\s*read,\s*step=(\d+)", text)
+        steps = steps[:int(r.group(1))] + step_blocks(m + ".inp")
+    return steps
 
 
 def main():
@@ -77,22 +114,44 @@ def main():
         open("next_job.txt", "w").write("DONE %s\n" % current)
         print("%s completed successfully; nothing to continue" % current)
         return
-    point = last_converged(current + ".sta")
+    stuck = diverged(current)
+    # A restart that failed before converging any increment has no restart
+    # point of its own: go back to the newest member that has one.
+    point = None
+    while members:
+        current = members[-1]
+        point = last_converged(current + ".sta")
+        if point is not None:
+            break
+        members.pop()
     if point is None:
-        raise SystemExit("%s.sta has no converged increment; rerun %s instead" % (current, current))
+        raise SystemExit("no converged increment in any .sta of %s; rerun %s" % (job, job))
     step, inc = point
-    blocks = step_blocks(job + ".inp")
+    blocks = timeline(members)
     if step > len(blocks):
-        raise SystemExit("Step %d not found in %s.inp" % (step, job))
-    new = "%s_R%d" % (job, len(members))
+        raise SystemExit("Step %d not found in the step history of %s" % (step, current))
+    k = 1
+    while os.path.isfile("%s_R%d.sta" % (job, k)) or os.path.isfile("%s_R%d.inp" % (job, k)):
+        k += 1
+    new = "%s_R%d" % (job, k)
     with open(new + ".inp", "w") as out:
         out.write("*Heading\n** restart of %s from step %d increment %d\n" % (current, step, inc))
-        out.write("*Restart, read, step=%d, inc=%d\n" % (step, inc))
-        for block in blocks[step:]:          # steps after the one being continued
-            out.write(block)
+        if stuck:
+            # The step itself did not converge (not an external kill): end it at
+            # the last converged increment, finish its load in a new step
+            # <name>_C<k>, and run all later steps with looser tolerances.
+            out.write("*Restart, read, step=%d, inc=%d, end step\n" % (step, inc))
+            out.write(relax(blocks[step - 1], "_C%d" % k))
+            for block in blocks[step:]:
+                out.write(relax(block))
+        else:
+            out.write("*Restart, read, step=%d, inc=%d\n" % (step, inc))
+            for block in blocks[step:]:          # steps after the one being continued
+                out.write(block)
     open("next_job.txt", "w").write("%s %s\n" % (new, current))
-    print("wrote %s.inp: continue %s from step %d increment %d, then %d more steps"
-          % (new, current, step, inc, len(blocks) - step))
+    print("wrote %s.inp: continue %s from step %d increment %d, then %d more steps%s"
+          % (new, current, step, inc, len(blocks) - step,
+             " (step did not converge: relaxed tolerances)" if stuck else ""))
 
 
 main()

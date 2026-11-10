@@ -8,6 +8,9 @@ rem
 rem  If Abaqus is terminated from outside before a job completes, the job
 rem  is continued automatically from its last converged increment
 rem  (restart data written by the model), up to MAXRESTARTS times.
+rem  If a step does not converge on its own, it is closed at its last
+rem  converged increment and finished with looser tolerances.
+rem  Running this file again resumes jobs that have a .sta file.
 rem  Progress is written to models\run_log.txt.
 rem ------------------------------------------------------------------
 setlocal
@@ -30,6 +33,12 @@ goto :eof
 set BASE=%1
 set CUR=%1
 set COUNT=0
+rem A job that already has a .sta file is not started again: it is
+rem continued from where its chain stopped.
+if exist "%BASE%.sta" (
+    echo ---- %BASE% resumed %date% %time% >> run_log.txt
+    goto check
+)
 echo ---- %BASE% started %date% %time% >> run_log.txt
 call abaqus job=%BASE% input=%BASE%.inp cpus=%CPUS% ask_delete=OFF interactive >> run_log.txt 2>&1
 :check

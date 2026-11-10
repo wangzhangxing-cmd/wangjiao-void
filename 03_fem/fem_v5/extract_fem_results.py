@@ -263,15 +263,20 @@ def extract(odb_path, meta_path, out):
         print("restart chain:", ", ".join(os.path.basename(p) for p in paths))
 
     def complete_step(name):
+        # A step that was ended early on restart is finished by a step named
+        # <name>_C<k> (continue_job.py); take the newest complete one.
         for o in reversed(odbs):
-            if name not in [str(x) for x in o.steps.keys()]:
-                continue
-            st = o.steps[name]
-            if not len(st.frames):
-                continue
-            fr = st.frames[-1]
-            if abs(fr.frameValue - st.timePeriod) <= 1.0e-6 * max(1.0, st.timePeriod):
-                return o, fr
+            keys = [str(x) for x in o.steps.keys()]
+            names = [x for x in reversed(keys) if x.startswith(name + "_C")]
+            if name in keys:
+                names.append(name)
+            for n in names:
+                st = o.steps[n]
+                if not len(st.frames):
+                    continue
+                fr = st.frames[-1]
+                if abs(fr.frameValue - st.timePeriod) <= 1.0e-6 * max(1.0, st.timePeriod):
+                    return o, fr
         return None, None
 
     def bind(o):

@@ -1,0 +1,8 @@
+﻿case,pressure_mpa,closed_form_depth_m,depth_1e-06,depth_1e-05,depth_3e-05,depth_0.0001,depth_0.0003
+"excavation (SA, 64x512)",0,0.914654,0.86215,0.86215,0.86215,0.704395,0.398952
+"operation, no void (FE medium)",5,0.14918,0.139489,0.11952,0.0680587,0,0
+"operation, no void (FE medium)",6,0.37846,0.368881,0.33192,0.297697,0.139489,0
+"operation, no void (FE medium)",7,0.58397,0.548755,0.548755,0.49847,0.368881,0
+"operation, no void (FE medium)",8,0.77067,0.725058,0.725058,0.661714,0.548755,0.184347
+"operation, no void (FE medium)",9,1.06952,1.03333,0.947151,0.867355,0.725058,0.368881
+"operation, no void (FE medium)",10,2.01318,2.02332,1.86381,1.57936,1.03333,0.603062

@@ -1,0 +1,714 @@
+{
+ "beta_deg": 10.0,
+ "panels": 1024,
+ "core_order": 1024,
+ "interface_order": 8192,
+ "wall_order": 1024,
+ "rock_mesh": "64x512",
+ "increment_mpa": 0.1,
+ "source_tolerance": 1e-09,
+ "stress_tolerance_pa": 500.0,
+ "plastic_threshold": 1e-06,
+ "steps": [
+  {
+   "pressure_mpa": 0.1,
+   "iterations": [
+    1
+   ],
+   "seconds": 1.4207812549999517
+  },
+  {
+   "pressure_mpa": 0.2,
+   "iterations": [
+    1
+   ],
+   "seconds": 1.3365418340000588
+  },
+  {
+   "pressure_mpa": 0.3,
+   "iterations": [
+    1
+   ],
+   "seconds": 1.3931170009999505
+  },
+  {
+   "pressure_mpa": 0.4,
+   "iterations": [
+    1
+   ],
+   "seconds": 1.3439014520000683
+  },
+  {
+   "pressure_mpa": 0.5,
+   "iterations": [
+    1
+   ],
+   "seconds": 1.303109164000034
+  },
+  {
+   "pressure_mpa": 0.6,
+   "iterations": [
+    1
+   ],
+   "seconds": 1.4126657860000478
+  },
+  {
+   "pressure_mpa": 0.7,
+   "iterations": [
+    1
+   ],
+   "seconds": 1.5503221710000616
+  },
+  {
+   "pressure_mpa": 0.8,
+   "iterations": [
+    1
+   ],
+   "seconds": 1.3458877529999427
+  },
+  {
+   "pressure_mpa": 0.9,
+   "iterations": [
+    1
+   ],
+   "seconds": 1.5685352600000897
+  },
+  {
+   "pressure_mpa": 1.0,
+   "iterations": [
+    1
+   ],
+   "seconds": 1.582310194999991
+  },
+  {
+   "pressure_mpa": 1.1,
+   "iterations": [
+    1
+   ],
+   "seconds": 1.6566800589999957
+  },
+  {
+   "pressure_mpa": 1.2,
+   "iterations": [
+    1
+   ],
+   "seconds": 1.495136883999976
+  },
+  {
+   "pressure_mpa": 1.3,
+   "iterations": [
+    1
+   ],
+   "seconds": 1.5426922130000094
+  },
+  {
+   "pressure_mpa": 1.4,
+   "iterations": [
+    1
+   ],
+   "seconds": 1.5117036049999797
+  },
+  {
+   "pressure_mpa": 1.5,
+   "iterations": [
+    1
+   ],
+   "seconds": 1.3247175630000356
+  },
+  {
+   "pressure_mpa": 1.6,
+   "iterations": [
+    1
+   ],
+   "seconds": 1.4320729840000013
+  },
+  {
+   "pressure_mpa": 1.7,
+   "iterations": [
+    1
+   ],
+   "seconds": 1.3075203180000017
+  },
+  {
+   "pressure_mpa": 1.8,
+   "iterations": [
+    1
+   ],
+   "seconds": 1.431723199999965
+  },
+  {
+   "pressure_mpa": 1.9,
+   "iterations": [
+    1
+   ],
+   "seconds": 1.263493568000058
+  },
+  {
+   "pressure_mpa": 2.0,
+   "iterations": [
+    1
+   ],
+   "seconds": 1.2845508369999834
+  },
+  {
+   "pressure_mpa": 2.1,
+   "iterations": [
+    1
+   ],
+   "seconds": 1.3761033560000442
+  },
+  {
+   "pressure_mpa": 2.2,
+   "iterations": [
+    1
+   ],
+   "seconds": 1.2579410679999228
+  },
+  {
+   "pressure_mpa": 2.3,
+   "iterations": [
+    1
+   ],
+   "seconds": 1.3359612269999843
+  },
+  {
+   "pressure_mpa": 2.4,
+   "iterations": [
+    1
+   ],
+   "seconds": 1.279928185000017
+  },
+  {
+   "pressure_mpa": 2.5,
+   "iterations": [
+    11
+   ],
+   "seconds": 8.066955723999968
+  },
+  {
+   "pressure_mpa": 2.6,
+   "iterations": [
+    13
+   ],
+   "seconds": 9.040466917999993
+  },
+  {
+   "pressure_mpa": 2.7,
+   "iterations": [
+    14
+   ],
+   "seconds": 9.662011961999951
+  },
+  {
+   "pressure_mpa": 2.8,
+   "iterations": [
+    12
+   ],
+   "seconds": 9.302467471
+  },
+  {
+   "pressure_mpa": 2.9,
+   "iterations": [
+    20
+   ],
+   "seconds": 14.6128645
+  },
+  {
+   "pressure_mpa": 3.0,
+   "iterations": [
+    19
+   ],
+   "seconds": 14.635212742000022
+  },
+  {
+   "pressure_mpa": 3.1,
+   "iterations": [
+    22
+   ],
+   "seconds": 16.137730767999983
+  },
+  {
+   "pressure_mpa": 3.2,
+   "iterations": [
+    21
+   ],
+   "seconds": 15.793193992999932
+  },
+  {
+   "pressure_mpa": 3.3,
+   "iterations": [
+    24
+   ],
+   "seconds": 17.611560403
+  },
+  {
+   "pressure_mpa": 3.4,
+   "iterations": [
+    26
+   ],
+   "seconds": 19.504576043000043
+  },
+  {
+   "pressure_mpa": 3.5,
+   "iterations": [
+    23
+   ],
+   "seconds": 16.74787481699991
+  },
+  {
+   "pressure_mpa": 3.6,
+   "iterations": [
+    29
+   ],
+   "seconds": 21.480562063000093
+  },
+  {
+   "pressure_mpa": 3.7,
+   "iterations": [
+    46
+   ],
+   "seconds": 32.96049591799988
+  },
+  {
+   "pressure_mpa": 3.8,
+   "iterations": [
+    42
+   ],
+   "seconds": 30.550229297999977
+  },
+  {
+   "pressure_mpa": 3.9,
+   "iterations": [
+    40
+   ],
+   "seconds": 29.186950011999897
+  },
+  {
+   "pressure_mpa": 4.0,
+   "iterations": [
+    46
+   ],
+   "seconds": 32.300584999999955
+  },
+  {
+   "pressure_mpa": 4.1,
+   "iterations": [
+    45
+   ],
+   "seconds": 31.807962869999983
+  },
+  {
+   "pressure_mpa": 4.2,
+   "iterations": [
+    48
+   ],
+   "seconds": 33.63496086300006
+  },
+  {
+   "pressure_mpa": 4.3,
+   "iterations": [
+    51
+   ],
+   "seconds": 35.07515734399999
+  },
+  {
+   "pressure_mpa": 4.4,
+   "iterations": [
+    56
+   ],
+   "seconds": 40.24735475600005
+  },
+  {
+   "pressure_mpa": 4.5,
+   "iterations": [
+    54
+   ],
+   "seconds": 39.045377431999896
+  },
+  {
+   "pressure_mpa": 4.6,
+   "iterations": [
+    68
+   ],
+   "seconds": 48.50491330299997
+  },
+  {
+   "pressure_mpa": 4.7,
+   "iterations": [
+    85
+   ],
+   "seconds": 61.58688639600018
+  },
+  {
+   "pressure_mpa": 4.8,
+   "iterations": [
+    59
+   ],
+   "seconds": 43.57964425699993
+  },
+  {
+   "pressure_mpa": 4.9,
+   "iterations": [
+    52
+   ],
+   "seconds": 38.133396148999964
+  },
+  {
+   "pressure_mpa": 5.0,
+   "iterations": [
+    97
+   ],
+   "seconds": 68.25456556099994
+  },
+  {
+   "pressure_mpa": 5.1,
+   "iterations": [
+    88
+   ],
+   "seconds": 61.39394069500008
+  },
+  {
+   "pressure_mpa": 5.2,
+   "iterations": [
+    84
+   ],
+   "seconds": 56.63402071900009
+  },
+  {
+   "pressure_mpa": 5.3,
+   "iterations": [
+    70
+   ],
+   "seconds": 47.26949845599984
+  },
+  {
+   "pressure_mpa": 5.4,
+   "iterations": [
+    78
+   ],
+   "seconds": 53.98665238500007
+  },
+  {
+   "pressure_mpa": 5.5,
+   "iterations": [
+    67
+   ],
+   "seconds": 50.33795175099999
+  },
+  {
+   "pressure_mpa": 5.6,
+   "iterations": [
+    78
+   ],
+   "seconds": 60.4258403419999
+  },
+  {
+   "pressure_mpa": 5.7,
+   "iterations": [
+    105
+   ],
+   "seconds": 82.41619961399988
+  },
+  {
+   "pressure_mpa": 5.8,
+   "iterations": [
+    63
+   ],
+   "seconds": 51.95974232699973
+  },
+  {
+   "pressure_mpa": 5.9,
+   "iterations": [
+    66
+   ],
+   "seconds": 54.36344375600038
+  },
+  {
+   "pressure_mpa": 6.0,
+   "iterations": [
+    70
+   ],
+   "seconds": 57.36116505100017
+  },
+  {
+   "pressure_mpa": 6.1,
+   "iterations": [
+    69
+   ],
+   "seconds": 60.897104759000285
+  },
+  {
+   "pressure_mpa": 6.2,
+   "iterations": [
+    77
+   ],
+   "seconds": 66.25208336500009
+  },
+  {
+   "pressure_mpa": 6.3,
+   "iterations": [
+    58
+   ],
+   "seconds": 50.8809294470002
+  },
+  {
+   "pressure_mpa": 6.4,
+   "iterations": [
+    87
+   ],
+   "seconds": 78.36722338800018
+  },
+  {
+   "pressure_mpa": 6.5,
+   "iterations": [
+    83
+   ],
+   "seconds": 74.38774883099995
+  },
+  {
+   "pressure_mpa": 6.6,
+   "iterations": [
+    71
+   ],
+   "seconds": 63.30093805600018
+  },
+  {
+   "pressure_mpa": 6.7,
+   "iterations": [
+    69
+   ],
+   "seconds": 61.47890919400015
+  },
+  {
+   "pressure_mpa": 6.8,
+   "iterations": [
+    75
+   ],
+   "seconds": 65.35301609499993
+  },
+  {
+   "pressure_mpa": 6.9,
+   "iterations": [
+    87
+   ],
+   "seconds": 77.09966265699995
+  },
+  {
+   "pressure_mpa": 7.0,
+   "iterations": [
+    80
+   ],
+   "seconds": 77.05348295699969
+  },
+  {
+   "pressure_mpa": 7.1,
+   "iterations": [
+    70
+   ],
+   "seconds": 61.48784744099976
+  },
+  {
+   "pressure_mpa": 7.2,
+   "iterations": [
+    80
+   ],
+   "seconds": 72.8626602180002
+  },
+  {
+   "pressure_mpa": 7.3,
+   "iterations": [
+    80
+   ],
+   "seconds": 63.46023395400016
+  },
+  {
+   "pressure_mpa": 7.4,
+   "iterations": [
+    75
+   ],
+   "seconds": 59.330405206999785
+  },
+  {
+   "pressure_mpa": 7.5,
+   "iterations": [
+    71
+   ],
+   "seconds": 54.39310533299977
+  },
+  {
+   "pressure_mpa": 7.6,
+   "iterations": [
+    80
+   ],
+   "seconds": 62.40159975200004
+  },
+  {
+   "pressure_mpa": 7.7,
+   "iterations": [
+    89
+   ],
+   "seconds": 67.09283089600012
+  },
+  {
+   "pressure_mpa": 7.8,
+   "iterations": [
+    83
+   ],
+   "seconds": 61.63940978900018
+  },
+  {
+   "pressure_mpa": 7.9,
+   "iterations": [
+    133
+   ],
+   "seconds": 101.00306560900026
+  },
+  {
+   "pressure_mpa": 8.0,
+   "iterations": [
+    117
+   ],
+   "seconds": 91.43388811999966
+  },
+  {
+   "pressure_mpa": 8.1,
+   "iterations": [
+    80
+   ],
+   "seconds": 62.483913534000294
+  },
+  {
+   "pressure_mpa": 8.2,
+   "iterations": [
+    84
+   ],
+   "seconds": 64.77233400700015
+  },
+  {
+   "pressure_mpa": 8.3,
+   "iterations": [
+    117
+   ],
+   "seconds": 90.33381499300003
+  },
+  {
+   "pressure_mpa": 8.4,
+   "iterations": [
+    107
+   ],
+   "seconds": 84.55183837799996
+  },
+  {
+   "pressure_mpa": 8.5,
+   "iterations": [
+    87
+   ],
+   "seconds": 68.9243571410002
+  },
+  {
+   "pressure_mpa": 8.6,
+   "iterations": [
+    88
+   ],
+   "seconds": 70.75119506300007
+  },
+  {
+   "pressure_mpa": 8.7,
+   "iterations": [
+    98
+   ],
+   "seconds": 77.97795761299994
+  },
+  {
+   "pressure_mpa": 8.8,
+   "iterations": [
+    156
+   ],
+   "seconds": 117.22514460999992
+  },
+  {
+   "pressure_mpa": 8.9,
+   "iterations": [
+    104
+   ],
+   "seconds": 77.87925251100023
+  },
+  {
+   "pressure_mpa": 9.0,
+   "iterations": [
+    204
+   ],
+   "seconds": 151.6394119860006
+  },
+  {
+   "pressure_mpa": 9.1,
+   "iterations": [
+    112
+   ],
+   "seconds": 83.69748920800066
+  },
+  {
+   "pressure_mpa": 9.2,
+   "iterations": [
+    142
+   ],
+   "seconds": 107.34541363799963
+  },
+  {
+   "pressure_mpa": 9.3,
+   "iterations": [
+    133
+   ],
+   "seconds": 97.33537083200008
+  },
+  {
+   "pressure_mpa": 9.4,
+   "iterations": [
+    171
+   ],
+   "seconds": 125.22382690900031
+  },
+  {
+   "pressure_mpa": 9.5,
+   "iterations": [
+    155
+   ],
+   "seconds": 111.5250128409998
+  },
+  {
+   "pressure_mpa": 9.6,
+   "iterations": [
+    130
+   ],
+   "seconds": 93.45490188799977
+  },
+  {
+   "pressure_mpa": 9.7,
+   "iterations": [
+    182
+   ],
+   "seconds": 129.4578479189995
+  },
+  {
+   "pressure_mpa": 9.8,
+   "iterations": [
+    220
+   ],
+   "seconds": 161.0167944219993
+  },
+  {
+   "pressure_mpa": 9.9,
+   "iterations": [
+    226
+   ],
+   "seconds": 163.93668501499997
+  },
+  {
+   "pressure_mpa": 10.0,
+   "iterations": [
+    253
+   ],
+   "seconds": 191.83971203200053
+  }
+ ]
+}

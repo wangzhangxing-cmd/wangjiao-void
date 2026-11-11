@@ -1,0 +1,2 @@
+﻿step,pressure_mpa,q_mean_resultant_mpa,contact_ur_mm,void_ur_mm,seal_mises_max_mpa,seal_peak_local_angle_deg,concrete_maxp_max_mpa,matrix_maxp_max_mpa,rebar_inner_max_mpa,rebar_outer_max_mpa,plastic_area_m2,plastic_outer_radius_m,plastic_increment_max,minimum_contact_pressure_mpa,plasticity_in_outermost_ring
+P010,1,0.899180723,0.59756601,1.06634651,41.6967984,5.32,8.19143873,0.971548786,26.8002605,78.110014,0,0,0,0.845935668,False
